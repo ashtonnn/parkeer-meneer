@@ -146,7 +146,9 @@ def admin_users():
         if not admin or admin["email"]!=admin_email:
             return jsonify(error="Geen toegang"),403
         users=[dict(row) for row in conn.execute("SELECT id,email,name,created_at FROM users ORDER BY id DESC LIMIT 500")]
-    for user in users:\n        user["is_admin"]=user["email"]==admin_email\n    return jsonify(users=users,count=len(users))
+    for user in users:
+        user["is_admin"]=user["email"]==admin_email
+    return jsonify(users=users,count=len(users))
 
 WFS = "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeervoorzieningen/MapServer/WFSServer"
 HEADERS = {"User-Agent": "ParkeerMeneer/0.3 educational prototype"}
