@@ -102,8 +102,8 @@ function showCuratedGarages(){
   root.innerHTML='<p>Voor deze straat is nog geen gecontroleerde top 3 samengesteld. Gebruik Google Maps voor locaties in de buurt.</p>';return;
  }
  nearbyGarages=(kuip?kuipGarages:curatedGarages).map(g=>({...g}));
- root.innerHTML=nearbyGarages.map((g,i)=>'<button type="button" class="alt-card '+(i===0?'best':'')+'" data-garage="'+i+'"><div class="alt-photo" style="font-size:52px;background:linear-gradient(140deg,#d6e7e5,#a8c9c4);display:grid;place-items:center">🏢</div><div class="alt-body">'+(i===0?'<span class="garage-recommended">★ AANBEVOLEN</span>':'')+'<strong>'+escapeGarage(g.name)+'</strong><small>'+escapeGarage(g.type)+' · '+escapeGarage(g.address)+'</small></div></button>').join('');
- root.querySelectorAll('[data-garage]').forEach(b=>b.onclick=()=>openGarage(Number(b.dataset.garage)));
+ root.innerHTML=nearbyGarages.map((g,i)=>'<button title="Open route in Google Maps" aria-label="Open Google Maps-route naar '+escapeGarage(g.name)+'" type="button" class="alt-card '+(i===0?'best':'')+'" data-garage="'+i+'"><div class="alt-photo" style="font-size:52px;background:linear-gradient(140deg,#d6e7e5,#a8c9c4);display:grid;place-items:center">🏢</div><div class="alt-body">'+(i===0?'<span class="garage-recommended">★ AANBEVOLEN</span>':'')+'<strong>'+escapeGarage(g.name)+'</strong><small>'+escapeGarage(g.type)+' · '+escapeGarage(g.address)+'</small></div></button>').join('');
+ root.querySelectorAll('[data-garage]').forEach(b=>b.onclick=()=>{const g=nearbyGarages[Number(b.dataset.garage)];if(!g)return;const url='https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(g.address)+'&travelmode=driving';window.open(url,'_blank','noopener,noreferrer')});
  $('garageDisclaimer').textContent='Drie bestaande locaties. Geen live beschikbaarheid. Bij De Kuip kunnen op wedstrijddagen parkeerkaarten verplicht zijn. Afbeeldingen zijn illustraties.';
 }
 function openGarage(i){
