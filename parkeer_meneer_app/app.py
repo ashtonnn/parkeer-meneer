@@ -93,6 +93,49 @@ def admin_page():
         return "Geen toegang",403
     return send_from_directory(ROOT,"admin.html")
 
+def is_admin():
+    uid=session.get("uid")
+    admin_email=os.environ.get("ADMIN_EMAIL","").strip().lower()
+    if not uid or not admin_email:return False
+    with db() as conn:
+        user=conn.execute("SELECT email FROM users WHERE id=?",(uid,)).fetchone()
+    return bool(user and user["email"]==admin_email)
+
+@app.patch("/api/admin/users/<int:user_id>")
+def admin_update_user(user_id):
+    if not is_admin():return jsonify(error="Geen toegang"),403
+    data=request.get_json(silent=True) or {}
+    name=str(data.get("name","")).strip()
+    email=str(data.get("email","")).strip().lower()
+    if len(name)>80 or len(email)>255 or not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+",email):
+        return jsonify(error="Ongeldige naam of e-mailadres"),400
+    admin_email=os.environ.get("ADMIN_EMAIL","").strip().lower()
+    with db() as conn:
+        user=conn.execute("SELECT email FROM users WHERE id=?",(user_id,)).fetchone()
+        if not user:return jsonify(error="Gebruiker niet gevonden"),404
+        if user["email"]==admin_email and email!=admin_email:
+            return jsonify(error="Beheerderadres kan niet via deze pagina worden gewijzigd"),400
+        if user["email"]!=admin_email and email==admin_email:
+            return jsonify(error="Beheerderadres is gereserveerd"),400
+        try:
+            conn.execute("UPDATE users SET name=?,email=? WHERE id=?",(name,email,user_id))
+        except sqlite3.IntegrityError:
+            return jsonify(error="E-mailadres is al in gebruik"),409
+    return jsonify(ok=True)
+
+@app.delete("/api/admin/users/<int:user_id>")
+def admin_delete_user(user_id):
+    if not is_admin():return jsonify(error="Geen toegang"),403
+    if user_id==session.get("uid"):
+        return jsonify(error="Je kunt je eigen beheerdersaccount hier niet verwijderen"),400
+    with db() as conn:
+        user=conn.execute("SELECT email FROM users WHERE id=?",(user_id,)).fetchone()
+        if not user:return jsonify(error="Gebruiker niet gevonden"),404
+        if user["email"]==os.environ.get("ADMIN_EMAIL","").strip().lower():
+            return jsonify(error="Beheerdersaccount kan niet worden verwijderd"),400
+        conn.execute("DELETE FROM users WHERE id=?",(user_id,))
+    return jsonify(ok=True)
+
 @app.get("/api/admin/users")
 def admin_users():
     admin_email=os.environ.get("ADMIN_EMAIL","").strip().lower()
