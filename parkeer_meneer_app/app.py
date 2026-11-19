@@ -16,17 +16,20 @@ def db():
     return connection
 with db() as conn:
     conn.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT NOT NULL UNIQUE, password_hash TEXT NOT NULL, created_at TEXT DEFAULT CURRENT_TIMESTAMP)")
+    if "name" not in [row["name"] for row in conn.execute("PRAGMA table_info(users)")]:
+        conn.execute("ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT ''")
 
 @app.post("/api/auth/register")
 def register():
     data=request.get_json(silent=True) or {}
     email=str(data.get("email","")).strip().lower()
     password=str(data.get("password",""))
+    name=str(data.get("name","")).strip()[:80]
     if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+",email) or len(email)>255 or not 12<=len(password)<=128:
         return jsonify(error="Gebruik een geldig e-mailadres en een wachtwoord van 12–128 tekens"),400
     try:
         with db() as conn:
-            result=conn.execute("INSERT INTO users (email,password_hash) VALUES (?,?)",(email,generate_password_hash(password)))
+            result=conn.execute("INSERT INTO users (email,password_hash,name) VALUES (?,?,?)",(email,generate_password_hash(password),name))
             uid=result.lastrowid
     except sqlite3.IntegrityError:
         return jsonify(error="Registreren mislukt; e-mailadres mogelijk al in gebruik"),409
@@ -53,8 +56,42 @@ def me():
     uid=session.get("uid")
     if not uid:return jsonify(configured=True,email=None)
     with db() as conn:
+        user=conn.execute("SELECT email,name FROM users WHERE id=?",(uid,)).fetchone()
+    return jsonify(configured=True,email=user["email"] if user else None,name=user["name"] if user else None,admin=bool(user and os.environ.get("ADMIN_EMAIL") and user["email"]==os.environ["ADMIN_EMAIL"].strip().lower()))
+
+@app.post("/api/auth/profile")
+def profile():
+    uid=session.get("uid")
+    if not uid:return jsonify(error="Niet ingelogd"),401
+    data=request.get_json(silent=True) or {}
+    email=str(data.get("email","")).strip().lower()
+    name=str(data.get("name","")).strip()
+    password=str(data.get("current_password",""))
+    new=str(data.get("new_password",""))
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+",email) or len(email)>255 or len(name)>80 or (new and not 12<=len(new)<=128):
+        return jsonify(error="Controleer e-mail, naam en wachtwoord (minimaal 12 tekens)"),400
+    with db() as conn:
+        user=conn.execute("SELECT password_hash FROM users WHERE id=?",(uid,)).fetchone()
+        if not user or not check_password_hash(user["password_hash"],password):
+            return jsonify(error="Huidig wachtwoord onjuist"),403
+        try:
+            if new:
+                conn.execute("UPDATE users SET email=?,name=?,password_hash=? WHERE id=?",(email,name,generate_password_hash(new),uid))
+            else:
+                conn.execute("UPDATE users SET email=?,name=? WHERE id=?",(email,name,uid))
+        except sqlite3.IntegrityError:
+            return jsonify(error="E-mailadres al in gebruik"),409
+    return jsonify(email=email,name=name)
+
+@app.get("/admin")
+def admin_page():
+    uid=session.get("uid")
+    if not uid:return "Geen toegang",403
+    with db() as conn:
         user=conn.execute("SELECT email FROM users WHERE id=?",(uid,)).fetchone()
-    return jsonify(configured=True,email=user["email"] if user else None,admin=bool(user and os.environ.get("ADMIN_EMAIL") and user["email"]==os.environ["ADMIN_EMAIL"].strip().lower()))
+    if not user or not os.environ.get("ADMIN_EMAIL") or user["email"]!=os.environ["ADMIN_EMAIL"].strip().lower():
+        return "Geen toegang",403
+    return send_from_directory(ROOT,"admin.html")
 
 @app.get("/api/admin/users")
 def admin_users():
@@ -65,7 +102,7 @@ def admin_users():
         admin=conn.execute("SELECT email FROM users WHERE id=?",(session["uid"],)).fetchone()
         if not admin or admin["email"]!=admin_email:
             return jsonify(error="Geen toegang"),403
-        users=[dict(row) for row in conn.execute("SELECT id,email,created_at FROM users ORDER BY id DESC LIMIT 500")]
+        users=[dict(row) for row in conn.execute("SELECT id,email,name,created_at FROM users ORDER BY id DESC LIMIT 500")]
     return jsonify(users=users,count=len(users))
 
 WFS = "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeervoorzieningen/MapServer/WFSServer"
