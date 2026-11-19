@@ -1,0 +1,194 @@
+{
+  "@context": {
+    "adms": "http://www.w3.org/ns/adms#",
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcatap": "http://data.europa.eu/r5r/",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dct": "http://purl.org/dc/terms/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "gsp": "http://www.opengis.net/ont/geosparql#",
+    "locn": "http://www.w3.org/ns/locn#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "schema1": "http://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "spdx": "http://spdx.org/rdf/terms#",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "time1": "http://www.w3.org/2006/time",
+    "vann": "http://purl.org/vocab/vann/",
+    "vcard": "http://www.w3.org/2006/vcard/ns#",
+    "void": "http://rdfs.org/ns/void#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "https://hub.clearly.app/organization/65e9c5c8fe2ac522c6ac7b43",
+      "@type": "foaf:Organization",
+      "foaf:name": "3D Rotterdam"
+    },
+    {
+      "@id": "https://hub.clearly.app/datasets/6a9e88a6c1a440ac478cb37b",
+      "@type": [
+        "dcat:Distribution",
+        "dcat:Dataset"
+      ],
+      "dcat:accessURL": [
+        {
+          "@id": "https://www.gis.rotterdam.nl/gisweb2/GAIA_schaduwanalyse_gebouwen/wms?Service=WMS&Request=GetCapabilities"
+        },
+        {
+          "@id": "https://www.gis.rotterdam.nl/gisweb2/GAIA_schaduwanalyse_overig/wms?Service=WMS&Request=GetCapabilities"
+        },
+        {
+          "@id": "https://www.gis.rotterdam.nl/gisweb2/GAIA_schaduwanalyse_overlap/wms?Service=WMS&Request=GetCapabilities"
+        },
+        {
+          "@id": "https://www.gis.rotterdam.nl/gisweb2/GAIA_schaduwanalyse_groenvlakken/wms?Service=WMS&Request=GetCapabilities"
+        },
+        {
+          "@id": "https://www.gis.rotterdam.nl/gisweb2/GAIA_schaduwanalyse_bomen/wms?Service=WMS&Request=GetCapabilities"
+        },
+        {
+          "@id": "https://www.gis.rotterdam.nl/gisweb2/GAIA_schaduwanalyse_voetfietspaden/wms?Service=WMS&Request=GetCapabilities"
+        }
+      ],
+      "dcat:contactPoint": {
+        "@id": "_:Nffccb35d608e4d9882939ee9d2d1a97c"
+      },
+      "dcat:distribution": {
+        "@id": "https://hub.clearly.app/datasets/6a9e88a6c1a440ac478cb37b"
+      },
+      "dcat:keyword": [
+        "Shadow analysis",
+        "klimaatadaptatie",
+        "green assets",
+        "Rotterdam",
+        "slow traffice",
+        "pedestrian",
+        "Shaduwanalyse",
+        "heat",
+        "langzaamverkeerroutes",
+        "schaduw",
+        "Climate adaptation",
+        "hitte"
+      ],
+      "dct:description": "How cool (%) are the sidewalks, bike paths, trails and pedestrian areas? The percentage of each surface that receives shade depends on trees, buildings, or both. The shading is calculated for June 21rst at 14:00 when the sun is at its highest angle in the Netherlands; therefore, when there is the least shadow cast on a surface. The surfaces are defined by the Dutch Large-scale Topographic Map (BGT) and are grouped as \"Slow traffic\", \"Green\" and \"Other\". The analysis is based on data provided by the municipality of Rotterdam, i.e., the municipality's 2025 (March) aerial point cloud and its BGT data. The analysis was realized by NEO. ********* Hoe koel (%) zijn de voetpaden, fietspaden en pleinen? Het percentage van elk oppervlak dat schaduw ontvangt is afhankelijk van de bomen, de gebouwen, of beide. De analyse is gebaseerd op gegevens van de gemeente Rotterdam, namelijk de puntenwolk uit luchtopnames van maart 2025 en de BGT-data van de gemeente. De analyse is uitgevoerd door NEO.",
+      "dct:format": "WMS",
+      "dct:identifier": "6a9e88a6c1a440ac478cb37b",
+      "dct:issued": [
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-09T16:44:34.703465"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-09-07T09:49:26.703105"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T15:00:12.550371"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T15:06:32.748150"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T15:05:16.948304"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-09T16:43:45.259421"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-09T16:41:22.288727"
+        }
+      ],
+      "dct:modified": [
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T15:06:32.715541"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T15:04:43.339615"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T15:05:16.907486"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T13:54:39.606821"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T15:06:32.707188"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T13:54:04.940267"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-10T13:53:53.169301"
+        }
+      ],
+      "dct:publisher": {
+        "@id": "https://hub.clearly.app/organization/65e9c5c8fe2ac522c6ac7b43"
+      },
+      "dct:spatial": {
+        "@id": "_:Nbe0febfb9fc24e19836f2e4860f77408"
+      },
+      "dct:title": [
+        "Shadow_projection_Overlap",
+        "Percent_shade_other_surfaces",
+        "Shadow_projection_Trees_only",
+        "Percent_shade_slow_traffic_surfaces",
+        "3D Rotterdam - Schaduw Analyse 2025",
+        "Shadow_projection_Buildings_only",
+        "Percent_shade_green_surfaces"
+      ],
+      "owl:versionInfo": "Version 0.9"
+    },
+    {
+      "@id": "_:Nbe0febfb9fc24e19836f2e4860f77408",
+      "@type": "dct:Location",
+      "locn:geometry": [
+        {
+          "@type": "https://www.iana.org/assignments/media-types/application/vnd.geo+json",
+          "@value": "{\"type\":\"Polygon\",\"coordinates\":[[[3.94544,52.040174,0],[3.94544,51.786761,0],[4.624584,51.786761,0],[4.624584,52.040174,0],[3.94544,52.040174,0]]]}"
+        },
+        {
+          "@type": "gsp:wktLiteral",
+          "@value": "POLYGON ((3.9454 52.0402 0.0000, 3.9454 51.7868 0.0000, 4.6246 51.7868 0.0000, 4.6246 52.0402 0.0000, 3.9454 52.0402 0.0000))"
+        }
+      ]
+    },
+    {
+      "@id": "_:Nffccb35d608e4d9882939ee9d2d1a97c",
+      "@type": "vcard:Organization",
+      "vcard:fn": "Lessie Ortega-Córdova",
+      "vcard:hasEmail": {
+        "@id": "mailto:lm.ortegacordova1@rotterdam.nl"
+      }
+    }
+  ]
+}

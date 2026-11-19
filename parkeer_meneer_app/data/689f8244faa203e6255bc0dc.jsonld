@@ -1,0 +1,762 @@
+{
+  "@context": {
+    "adms": "http://www.w3.org/ns/adms#",
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcatap": "http://data.europa.eu/r5r/",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dct": "http://purl.org/dc/terms/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "gsp": "http://www.opengis.net/ont/geosparql#",
+    "locn": "http://www.w3.org/ns/locn#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "schema1": "http://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "spdx": "http://spdx.org/rdf/terms#",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "time1": "http://www.w3.org/2006/time",
+    "vann": "http://purl.org/vocab/vann/",
+    "vcard": "http://www.w3.org/2006/vcard/ns#",
+    "void": "http://rdfs.org/ns/void#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "https://hub.clearly.app/datasets/689f8244faa203e6255bc0dc",
+      "@type": [
+        "dcat:Distribution",
+        "dcat:Dataset"
+      ],
+      "dcat:accessURL": [
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Wegvakonderdelen/MapServer/WFSServer/v2_0?request=getCapabilities&service=WFS"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Palen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Watertappunten/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Wegmarkeringen_lijnen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Boringen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Glooiingen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Faunavoorzieningen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Speelplekken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Kolken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Civiele_Kunstwerken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Hekken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Hondenkaart/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/FietsTrommel/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Straatgoot/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Detectors/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeerautomaat/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Stolpersteine/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/FietsBeugelsKlemmen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Pergola/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/GrijzeWitteVlekken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Container/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Geleiderail/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Verkeersborden/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Speelondergronden/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/ElectraKast/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Watergang/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Evenementkasten/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Meerpalen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Afvalbak/MapServer/WFSServer/v2_0?request=getCapabilities&service=WFS"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Laadpalen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Bollards/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Objecten_eigendom/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Duikers/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Banken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Beschoeiingen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Sondering/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Groen_punten/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Havenbekkens/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Hoogtebegrenzers/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/BrugwachtersVerblijven/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Speeltoestellen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Toiletunits/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/MurenPlantenbak/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Wegmarkeringen_punten/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Bomen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Monumenten/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Wegmarkeringen_vlakken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Stranddouches/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Fietsenstalling/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Lichtpunten/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeervoorzieningen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Groeiplaatsverbeteringen/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Fontein/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Beelden/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Wildroosters/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Groen_vlakken/MapServer/WFSServer"
+        },
+        {
+          "@id": "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Informatiebord/MapServer/WFSServer"
+        }
+      ],
+      "dcat:distribution": {
+        "@id": "https://hub.clearly.app/datasets/689f8244faa203e6255bc0dc"
+      },
+      "dct:format": "WFS",
+      "dct:identifier": "689f8244faa203e6255bc0dc",
+      "dct:issued": [
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:14:06.498831"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:17.784107"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:22:07.910627"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:00:14.808208"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:06:29.373188"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:17:14.296200"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:15:39.088818"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:06:53.965263"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:08:39.873635"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:09:58.271151"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:02:52.399301"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:18:16.408300"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:15:11.296016"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:18:57.898474"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:05:05.962454"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:20:51.735346"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:18:40.250219"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:53.779395"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:54:27.538062"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:13:10.814562"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:09:32.161192"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:03:53.195867"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:20:22.427026"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:14:53.674398"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:53:56.071647"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:57:23.761310"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:09:11.202053"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:33.166250"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:17:47.794361"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:19:44.222068"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:14:33.746868"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:19:19.321416"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:55:20.416086"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:04:39.139662"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:01:56.088670"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:22:26.336471"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:07:44.370027"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:13:51.741465"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:10:20.258576"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:12:18.308869"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:05:36.906882"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:00:48.142679"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:01:37.468915"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:13:34.426168"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:20:01.480737"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:56:50.111214"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:12:53.005588"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:02:27.694351"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:00.336145"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:54:52.475134"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:11:31.791088"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:21:45.400334"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:10:37.857810"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:07:19.964777"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:08:04.431779"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:21:19.731733"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:56:29.268724"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:10:57.311721"
+        }
+      ],
+      "dct:modified": [
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:09:58.262479"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:14:53.662889"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:33.153119"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:21:45.382607"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:01:56.082600"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-05-06T09:07:11.262845"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:18:57.883312"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:19:19.306093"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:05:05.956383"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:29:21.543023"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:10:37.848723"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:09:32.152903"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:20:01.464504"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:04:39.133487"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:02:52.393770"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:56:50.107068"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:15:39.076646"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:00:48.137558"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:18:16.393810"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:13:51.730461"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:22:26.317934"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:17.771240"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:02:27.689138"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:01:37.463848"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:05:36.900218"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:54:52.470801"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:57:23.756982"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:10:57.302245"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:14:33.735317"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:07:19.957566"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:55:20.412428"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:20:51.718533"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:11:31.780974"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:13:10.803993"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:30:42.682422"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:06:29.366392"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:15:11.283540"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:17:47.780255"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:00.322342"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:21:19.714446"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:08:39.865465"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:18:40.235229"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:20:22.410294"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:12:52.993125"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:10:20.249508"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:00:14.803511"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:09:11.193734"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:12:18.298765"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:03:53.190225"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:08:04.423959"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:17:14.282231"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:07:44.362514"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:16:53.765965"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:06:53.958219"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:14:06.487678"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:19:44.206250"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T19:13:34.415788"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-08-15T18:56:29.264847"
+        }
+      ],
+      "dct:publisher": {
+        "@id": "https://hub.clearly.app/organization/65e9c5c8fe2ac522c6ac7b43"
+      },
+      "dct:title": [
+        "Wegvakonderdelen",
+        "Informatiebord",
+        "Boringen",
+        "Beelden",
+        "Hekken",
+        "Detectors",
+        "ElectraKast",
+        "Fontein",
+        "Objecten_eigendom",
+        "Lichtpunten",
+        "Speelplekken",
+        "Speeltoestellen",
+        "Havenbekkens",
+        "Groen_punten",
+        "Wegmarkeringen_punten",
+        "3D Rotterdam - Beheer Openbare Ruimte 2D dataservices",
+        "Bomen",
+        "Stolpersteine",
+        "Monumenten",
+        "Banken",
+        "Meerpalen",
+        "Fietsenstalling",
+        "Geleiderail",
+        "Hoogtebegrenzers",
+        "Faunavoorzieningen",
+        "Evenementkasten",
+        "Civiele_Kunstwerken",
+        "Laadpalen",
+        "FietsBeugelsKlemmen",
+        "Parkeerautomaat",
+        "MurenPlantenbak",
+        "Afvalbak",
+        "Duikers",
+        "Toiletunits",
+        "Groeiplaatsverbeteringen",
+        "Speelondergronden",
+        "Glooiingen",
+        "Verkeersborden",
+        "BrugwachtersVerblijven",
+        "FietsTrommel",
+        "Wegmarkeringen_lijnen",
+        "Straatgoot",
+        "Parkeervoorzieningen",
+        "Wildroosters",
+        "Palen",
+        "Watergang",
+        "Beschoeiingen",
+        "Groen_vlakken",
+        "Bollards",
+        "Stranddouches",
+        "Container",
+        "Hondenkaart",
+        "Watertappunten",
+        "GrijzeWitteVlekken",
+        "Kolken",
+        "Wegmarkeringen_vlakken",
+        "Sondering",
+        "Pergola"
+      ]
+    },
+    {
+      "@id": "https://hub.clearly.app/organization/65e9c5c8fe2ac522c6ac7b43",
+      "@type": "foaf:Organization",
+      "foaf:name": "3D Rotterdam"
+    }
+  ]
+}

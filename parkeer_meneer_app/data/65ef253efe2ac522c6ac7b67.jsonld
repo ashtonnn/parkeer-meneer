@@ -1,0 +1,231 @@
+{
+  "@context": {
+    "adms": "http://www.w3.org/ns/adms#",
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcatap": "http://data.europa.eu/r5r/",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dct": "http://purl.org/dc/terms/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "gsp": "http://www.opengis.net/ont/geosparql#",
+    "locn": "http://www.w3.org/ns/locn#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "schema1": "http://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "spdx": "http://spdx.org/rdf/terms#",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "time1": "http://www.w3.org/2006/time",
+    "vann": "http://purl.org/vocab/vann/",
+    "vcard": "http://www.w3.org/2006/vcard/ns#",
+    "void": "http://rdfs.org/ns/void#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "https://hub.clearly.app/organization/65e9c5c8fe2ac522c6ac7b43",
+      "@type": "foaf:Organization",
+      "foaf:name": "3D Rotterdam"
+    },
+    {
+      "@id": "https://hub.clearly.app/datasets/65ef253efe2ac522c6ac7b67",
+      "@type": [
+        "dcat:Dataset",
+        "dcat:Distribution"
+      ],
+      "dcat:accessURL": [
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/594311c4-f78d-4d6c-a41c-062c87f99f8e/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/00a7099b-8670-4173-8ac6-d16cd6ab0ffe/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/2602863a-3d22-44c2-8c95-bbf88a20bf37/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/66992326-a7b5-42d5-89df-66410c221146/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/14c6d62a-ff9c-403a-9e8a-5e5472ff3b0e/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/ef2223d2-004c-48ab-bfeb-7789b539e1df/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/ac557457-02ed-4af0-aa86-261055d162cc/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/df9faaa5-6641-481d-ba31-63cf5414693f/tileset.json"
+        },
+        {
+          "@id": "https://www.3drotterdam.nl/datasource-data/bceb2186-3258-40b7-8486-1dc389b28981/tileset.json"
+        }
+      ],
+      "dcat:contactPoint": {
+        "@id": "_:N5e3364fd292541679ec7de2e08465d8b"
+      },
+      "dcat:distribution": {
+        "@id": "https://hub.clearly.app/datasets/65ef253efe2ac522c6ac7b67"
+      },
+      "dcat:keyword": [
+        "publicspace",
+        "3dobject",
+        "publiekeruimte",
+        "3dtiles",
+        "3d",
+        "containers",
+        "laadpalen",
+        "bins",
+        "lichtmasten",
+        "public",
+        "charchingstations",
+        "Rotterdam",
+        "lampposts"
+      ],
+      "dcat:landingPage": {
+        "@id": "https://www.3drotterdam.nl/"
+      },
+      "dcat:mediaType": "application/json",
+      "dct:description": "Rotterdam 3D is een driedimensionale (3D) weergave van de gemeente gebaseerd op tweedimensionale (2D) kaarten, hoogtemetingen, luchtfoto’s en beheergegevens van objecten op straat, zoals bomen en lantaarnpalen. Het is dus niet alleen een mooi plaatje, maar ook een weergave die nauwkeurig aansluit op de werkelijkheid. Doordat het overeenkomt met de 2D kaarten en de beheergegevens ontstaan er veel nieuwe toepassingen. Rotterdam 3D bestaat dus niet alleen uit gebouwen. Ook bomen, lantaarnpalen en kabels en leidingen zijn inmiddels in 3D beschikbaar.",
+      "dct:format": "3dtiles",
+      "dct:identifier": "65ef253efe2ac522c6ac7b67",
+      "dct:issued": [
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-01-24T10:08:57.196757"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-11-24T07:57:15.407345"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:38:04.966207"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:39:54.805842"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:37:34.206870"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:39:11.595329"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:40:38.699516"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:38:31.461199"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-10-25T09:42:23.007978"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-11-24T07:56:07.668613"
+        }
+      ],
+      "dct:modified": [
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:39:11.549968"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:40:38.651630"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:39:54.762615"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-11-24T07:58:38.827650"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2026-11-11T09:47:57.407070"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:38:31.416858"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-11-24T07:58:20.918349"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2025-01-24T10:08:57.139535"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-03-11T15:38:04.921819"
+        },
+        {
+          "@type": "xsd:dateTime",
+          "@value": "2024-10-25T09:42:53.398417"
+        }
+      ],
+      "dct:publisher": {
+        "@id": "https://hub.clearly.app/organization/65e9c5c8fe2ac522c6ac7b43"
+      },
+      "dct:spatial": {
+        "@id": "_:N8b2a9ea307374a939287ebc1dd7aa6c2"
+      },
+      "dct:title": [
+        "BGT",
+        "3D Rotterdam - Publieke ruimte / Public space",
+        "Parkeerautomaten / Parking meters",
+        "Lichtmasten/lantaarnpalen / Lampposts",
+        "Laadpalen / Charging stations",
+        "Vuilnisbakken / Garbage bins",
+        "Containers",
+        "Fietsparkeerplekken / Bicycle storage",
+        "Toiletunit",
+        "Banken / Benches"
+      ]
+    },
+    {
+      "@id": "_:N5e3364fd292541679ec7de2e08465d8b",
+      "@type": "vcard:Organization",
+      "vcard:fn": "Gemeente Rotterdam"
+    },
+    {
+      "@id": "_:N8b2a9ea307374a939287ebc1dd7aa6c2",
+      "@type": "dct:Location",
+      "locn:geometry": [
+        {
+          "@type": "gsp:wktLiteral",
+          "@value": "POLYGON ((3.9377 52.0156 0.0000, 3.9377 51.8323 0.0000, 4.6740 51.8323 0.0000, 4.6740 52.0156 0.0000, 3.9377 52.0156 0.0000))"
+        },
+        {
+          "@type": "https://www.iana.org/assignments/media-types/application/vnd.geo+json",
+          "@value": "{\"type\":\"Polygon\",\"coordinates\":[[[3.937743764980402,52.01557020757579,0],[3.937743764980402,51.832256269585685,0],[4.673970838006602,51.832256269585685,0],[4.673970838006602,52.01557020757579,0],[3.937743764980402,52.01557020757579,0]]]}"
+        }
+      ]
+    }
+  ]
+}

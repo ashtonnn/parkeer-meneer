@@ -1,0 +1,152 @@
+{
+  "@context": {
+    "adms": "http://www.w3.org/ns/adms#",
+    "brick": "https://brickschema.org/schema/Brick#",
+    "csvw": "http://www.w3.org/ns/csvw#",
+    "dc": "http://purl.org/dc/elements/1.1/",
+    "dcam": "http://purl.org/dc/dcam/",
+    "dcat": "http://www.w3.org/ns/dcat#",
+    "dcatap": "http://data.europa.eu/r5r/",
+    "dcmitype": "http://purl.org/dc/dcmitype/",
+    "dct": "http://purl.org/dc/terms/",
+    "dcterms": "http://purl.org/dc/terms/",
+    "doap": "http://usefulinc.com/ns/doap#",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "gsp": "http://www.opengis.net/ont/geosparql#",
+    "locn": "http://www.w3.org/ns/locn#",
+    "odrl": "http://www.w3.org/ns/odrl/2/",
+    "org": "http://www.w3.org/ns/org#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "prof": "http://www.w3.org/ns/dx/prof/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qb": "http://purl.org/linked-data/cube#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "schema": "https://schema.org/",
+    "schema1": "http://schema.org/",
+    "sh": "http://www.w3.org/ns/shacl#",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "sosa": "http://www.w3.org/ns/sosa/",
+    "spdx": "http://spdx.org/rdf/terms#",
+    "ssn": "http://www.w3.org/ns/ssn/",
+    "time": "http://www.w3.org/2006/time#",
+    "time1": "http://www.w3.org/2006/time",
+    "vann": "http://purl.org/vocab/vann/",
+    "vcard": "http://www.w3.org/2006/vcard/ns#",
+    "void": "http://rdfs.org/ns/void#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  },
+  "@graph": [
+    {
+      "@id": "https://hub.clearly.app/organization/65e9c576fe2ac522c6ac7b40",
+      "@type": "foaf:Organization",
+      "foaf:name": "PDOK"
+    },
+    {
+      "@id": "https://hub.clearly.app/dataset/23d91b5c-15b5-4528-a4c5-be6021ebaaf0/resource/1af0fecd-39e4-4e2d-843d-c3baff368484",
+      "@type": "dcat:Distribution",
+      "dcat:accessURL": {
+        "@id": "https://www.pdok.nl/contact"
+      },
+      "dct:issued": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-03-25T13:26:44.083891"
+      },
+      "dct:modified": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-03-25T13:26:44.035664"
+      },
+      "dct:title": "Unnamed resource"
+    },
+    {
+      "@id": "https://hub.clearly.app/dataset/23d91b5c-15b5-4528-a4c5-be6021ebaaf0/resource/9bd3a864-1ee9-4096-a674-9f461c96b20a",
+      "@type": "dcat:Distribution",
+      "dcat:accessURL": {
+        "@id": "https://api.pdok.nl/lv/bgt/ogc/v1"
+      },
+      "dct:description": "OGC API Features",
+      "dct:issued": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-03-25T13:26:44.083885"
+      },
+      "dct:modified": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-03-25T13:26:44.035559"
+      },
+      "dct:title": "BGT"
+    },
+    {
+      "@id": "https://hub.clearly.app/dataset/23d91b5c-15b5-4528-a4c5-be6021ebaaf0/resource/c506e9c2-c8c9-4aab-980a-ab7c378b6112",
+      "@type": "dcat:Distribution",
+      "dcat:accessURL": {
+        "@id": "https://api.pdok.nl/lv/bgt/ogc/v1"
+      },
+      "dct:issued": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-03-25T13:26:44.083892"
+      },
+      "dct:modified": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-03-25T13:26:44.035736"
+      },
+      "dct:title": "Unnamed resource"
+    },
+    {
+      "@id": "https://hub.clearly.app/dataset/23d91b5c-15b5-4528-a4c5-be6021ebaaf0",
+      "@type": "dcat:Dataset",
+      "dcat:distribution": [
+        {
+          "@id": "https://hub.clearly.app/dataset/23d91b5c-15b5-4528-a4c5-be6021ebaaf0/resource/9bd3a864-1ee9-4096-a674-9f461c96b20a"
+        },
+        {
+          "@id": "https://hub.clearly.app/dataset/23d91b5c-15b5-4528-a4c5-be6021ebaaf0/resource/c506e9c2-c8c9-4aab-980a-ab7c378b6112"
+        },
+        {
+          "@id": "https://hub.clearly.app/dataset/23d91b5c-15b5-4528-a4c5-be6021ebaaf0/resource/1af0fecd-39e4-4e2d-843d-c3baff368484"
+        }
+      ],
+      "dcat:keyword": [
+        "basisregistratie",
+        "spoorlijnen",
+        "bgt",
+        "wegen",
+        "gebouwen",
+        "features",
+        "terreinen",
+        "water",
+        "topografie"
+      ],
+      "dct:description": "Via de OGC API Features kun je eenvoudig de BGT bevragen en de data gebruiken in eigen toepassingen. De BGT, Basisregistratie Grootschalige Topografie, wordt de gedetailleerde grootschalige basiskaart (digitale kaart) van heel Nederland, waarin op een eenduidige manier de ligging van alle fysieke objecten zoals gebouwen, wegen, water, spoorlijnen en (landbouw)terreinen is geregistreerd.\n\nVoorstellen voor verbetering van de BGT kunt u bekijken met de BGT Terugmeldingen dataset:\nhttps://www.nationaalgeoregister.nl/geonetwork/srv/dut/catalog.search#/metadata/ce5f0923-b697-42ea-8744-4fa4a77ec02e",
+      "dct:identifier": "ba8b66c9-5b11-4a15-90d6-73335029061d",
+      "dct:issued": {
+        "@type": "xsd:dateTime",
+        "@value": "2024-10-31T10:00:31.034577"
+      },
+      "dct:modified": {
+        "@type": "xsd:dateTime",
+        "@value": "2026-03-25T13:26:44.026169"
+      },
+      "dct:publisher": {
+        "@id": "https://hub.clearly.app/organization/65e9c576fe2ac522c6ac7b40"
+      },
+      "dct:spatial": {
+        "@id": "_:Ne7b3fd52d82142649e5c08c9be64c3e3"
+      },
+      "dct:title": "BGT OGC API Features"
+    },
+    {
+      "@id": "_:Ne7b3fd52d82142649e5c08c9be64c3e3",
+      "@type": "dct:Location",
+      "locn:geometry": [
+        {
+          "@type": "https://www.iana.org/assignments/media-types/application/vnd.geo+json",
+          "@value": "{\"type\": \"Polygon\", \"coordinates\": [[[1.3335, 50.3996], [8.8478, 50.3996], [8.8478, 53.901], [1.3335, 53.901], [1.3335, 50.3996]]]}"
+        },
+        {
+          "@type": "gsp:wktLiteral",
+          "@value": "POLYGON ((1.3335 50.3996, 8.8478 50.3996, 8.8478 53.9010, 1.3335 53.9010, 1.3335 50.3996))"
+        }
+      ]
+    }
+  ]
+}
