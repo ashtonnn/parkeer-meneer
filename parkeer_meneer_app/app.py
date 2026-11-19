@@ -1,8 +1,62 @@
-from flask import Flask, jsonify, send_from_directory
+from flask import Flask, jsonify, send_from_directory, request, session
 from pathlib import Path
 import requests, xml.etree.ElementTree as ET
+import os, re
+from datetime import timedelta
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import SQLAlchemyError
+from werkzeug.security import generate_password_hash, check_password_hash
 ROOT = Path(__file__).resolve().parent
 app = Flask(__name__, static_folder=str(ROOT), static_url_path="")
+app.config.update(SECRET_KEY=os.environ.get("SECRET_KEY") or os.urandom(32), SESSION_COOKIE_HTTPONLY=True, SESSION_COOKIE_SECURE=bool(os.environ.get("RENDER")), SESSION_COOKIE_SAMESITE="Lax", PERMANENT_SESSION_LIFETIME=timedelta(days=7))
+DB_URL = os.environ.get("DATABASE_URL", "").replace("mysql://", "mysql+pymysql://", 1)
+engine = create_engine(DB_URL, pool_pre_ping=True, pool_recycle=1800) if DB_URL else None
+if engine:
+    with engine.begin() as conn:
+        conn.execute(text("CREATE TABLE IF NOT EXISTS users (id INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY, email VARCHAR(255) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)"))
+
+@app.post("/api/auth/register")
+def register():
+    if not engine: return jsonify(error="Database nog niet gekoppeld"), 503
+    data=request.get_json(silent=True) or {}
+    email=str(data.get("email","")).strip().lower()
+    password=str(data.get("password",""))
+    if not re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+",email) or len(email)>255 or not 12<=len(password)<=128:
+        return jsonify(error="Gebruik een geldig e-mailadres en een wachtwoord van 12–128 tekens"),400
+    try:
+        with engine.begin() as conn:
+            result=conn.execute(text("INSERT INTO users (email,password_hash) VALUES (:email,:hash)"),{"email":email,"hash":generate_password_hash(password)})
+            uid=result.lastrowid
+    except SQLAlchemyError:
+        return jsonify(error="Registreren mislukt; e-mailadres mogelijk al in gebruik"),409
+    session.clear();session.permanent=True;session["uid"]=uid
+    return jsonify(email=email),201
+
+@app.post("/api/auth/login")
+def login():
+    if not engine:return jsonify(error="Database nog niet gekoppeld"),503
+    data=request.get_json(silent=True) or {}
+    email=str(data.get("email","")).strip().lower()
+    with engine.connect() as conn:
+        user=conn.execute(text("SELECT id,email,password_hash FROM users WHERE email=:email"),{"email":email}).mappings().first()
+    if not user or not check_password_hash(user["password_hash"],str(data.get("password",""))):
+        return jsonify(error="E-mailadres of wachtwoord onjuist"),401
+    session.clear();session.permanent=True;session["uid"]=user["id"]
+    return jsonify(email=user["email"])
+
+@app.post("/api/auth/logout")
+def logout():
+    session.clear();return jsonify(ok=True)
+
+@app.get("/api/auth/me")
+def me():
+    if not engine:return jsonify(configured=False,email=None)
+    uid=session.get("uid")
+    if not uid:return jsonify(configured=True,email=None)
+    with engine.connect() as conn:
+        user=conn.execute(text("SELECT email FROM users WHERE id=:uid"),{"uid":uid}).mappings().first()
+    return jsonify(configured=True,email=user["email"] if user else None)
+
 WFS = "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeervoorzieningen/MapServer/WFSServer"
 HEADERS = {"User-Agent": "ParkeerMeneer/0.3 educational prototype"}
 @app.get("/")
