@@ -86,24 +86,18 @@ async function loadNearbyGarages(){
  root.innerHTML='<p class="muted">Parkeergarages in de buurt zoeken…</p>';
  const lat=chosen.lat,lon=chosen.lon;
  try{
- const query='[out:json][timeout:12];(nwr["amenity"="parking"]["parking"="multi-storey"](around:3500,'+lat+','+lon+');nwr["amenity"="parking"]["parking"="underground"](around:3500,'+lat+','+lon+'););out center 35;';
- const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),18000);
- let data=null;
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),23000);
+ let data;
  try{
-  for(const endpoint of ['https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://overpass-api.de/api/interpreter']){
-   try{
-    const response=await fetch(endpoint,{method:'POST',body:'data='+encodeURIComponent(query),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:controller.signal});
-    if(response.ok){data=await response.json();break}
-   }catch(e){if(controller.signal.aborted)break}
-  }
+  const response=await fetch('/api/nearby-garages?lat='+encodeURIComponent(lat)+'&lon='+encodeURIComponent(lon),{signal:controller.signal});
+  if(!response.ok)throw Error('Garagegegevens niet beschikbaar');
+  data=await response.json();
  }finally{clearTimeout(timer)}
- if(!data)throw Error('Geen reactie van kaartdienst');
-
  nearbyGarages=(data.elements||[]).map(e=>({name:e.tags?.name||'Parkeergarage',lat:e.lat??e.center?.lat,lon:e.lon??e.center?.lon,website:e.tags?.website||'',hours:e.tags?.opening_hours||'',fee:e.tags?.charge||'',image:e.tags?.image||'',distance:0})).filter(g=>Number.isFinite(g.lat)&&Number.isFinite(g.lon)).map(g=>({...g,distance:garageDistance(lat,lon,g.lat,g.lon)})).sort((a,b)=>a.distance-b.distance).filter((g,i,arr)=>arr.findIndex(h=>h.name===g.name&&Math.abs(h.distance-g.distance)<100)===i).slice(0,3);
  if(!nearbyGarages.length)throw Error('Geen locaties gevonden');
  root.innerHTML=nearbyGarages.map((g,i)=>'<button type="button" class="alt-card '+(i===0?'best':'')+'" data-garage="'+i+'"><div class="alt-photo">🏢</div><div class="alt-body">'+(i===0?'<span class="alt-pill">★ AANBEVOLEN • dichtstbij</span>':'')+'<strong>'+escapeGarage(g.name)+'</strong><small>'+g.distance+' meter • tarieven bekijken</small></div></button>').join('');
  root.querySelectorAll('[data-garage]').forEach(b=>b.onclick=()=>openGarage(Number(b.dataset.garage)));
- }catch(err){nearbyGarages=[];root.innerHTML='<p class="muted">Parkeergarages konden niet worden geladen. Probeer de pagina later opnieuw.</p>'}
+ }catch(err){nearbyGarages=[];root.innerHTML='<p class="muted">De garagezoekdienst is tijdelijk niet bereikbaar. Probeer het opnieuw.</p><button type="button" class="btn secondary" onclick="loadNearbyGarages()">Opnieuw proberen</button>'}
 }
 function openGarage(i){
  const g=nearbyGarages[i];if(!g)return;
