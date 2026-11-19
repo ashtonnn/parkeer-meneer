@@ -90,15 +90,21 @@ const curatedGarages=[
 {name:'Erasmus Plaza Parking',address:'Burgemeester Oudlaan 50, 3062 PA Rotterdam',hours:'24 uur per dag, 7 dagen per week',fee:'Betaald parkeren; controleer actueel tarief',source:'https://www.eur.nl/campus/locaties/ruimtes/erasmus-plaza-parking',type:'Parkeergarage'},
 {name:'P+R Capelsebrug',address:'Capelsebrugpad 60, 3065 SM Rotterdam',hours:'Controleer bij aanbieder',fee:'Gratis parkeren',source:'https://www.rotterdam.nl/pr-capelsebrug',type:'P+R'}
 ];
+const kuipGarages=[
+{name:'P+R Beverwaard',address:'Edo Bergsmaweg 1, 3077 PX Rotterdam, Nederland',hours:'Controleer bij aanbieder',fee:'Gratis parkeren; evenementen kunnen andere regels hebben',source:'https://www.feyenoord.com/nl/de-club/jouw-route-naar-de-kuip/bereikbaarheid',type:'P+R · tram naar stadion',recommendation:'★ AANBEVOLEN · zonder stadionparkeerkaart'},
+{name:'Parkeergarage Veranda',address:'Siem Heidenstraat 6, 3077 MS Rotterdam, Nederland',hours:'24 uur per dag',fee:'Betaald parkeren; controleer tarief en evenementvoorwaarden',source:'https://www.rotterdam.nl/betaald-parkeren',type:'Parkeergarage · bij De Kuip'},
+{name:'Parkeerterreinen P2/P3/P4 De Kuip',address:'Van Zandvlietplein 1, 3077 AA Rotterdam, Nederland',hours:'Toegang afhankelijk van evenement',fee:'Op gewone dagen mogelijk gratis; bij wedstrijden parkeerkaart/toegang vereist',source:'https://www.dekuip.com/nl/voetbal/bereikbaarheid',type:'Stadionparkeren · toegangsbeperkingen'}
+];
 function showCuratedGarages(){
  const root=$('garageOptions');if(!root)return;
- if(!/kralingse zoom/i.test(chosen?.name||'')){
+ const kuip=/\\b(de kuip|stadion feijenoord|stadionweg|olympiaweg|van zandvlietplein|gamestate de kuip)\\b/i.test(chosen?.name||'');
+ if(!kuip&&!/kralingse zoom/i.test(chosen?.name||'')){
   root.innerHTML='<p>Voor deze straat is nog geen gecontroleerde top 3 samengesteld. Gebruik Google Maps voor locaties in de buurt.</p>';return;
  }
- nearbyGarages=curatedGarages.map(g=>({...g}));
- root.innerHTML=nearbyGarages.map((g,i)=>'<button type="button" class="alt-card '+(i===0?'best':'')+'" data-garage="'+i+'"><div class="alt-photo" style="font-size:52px;background:linear-gradient(140deg,#d6e7e5,#a8c9c4);display:grid;place-items:center">🏢</div><div class="alt-body">'+(i===0?'<span class="alt-pill">★ AANBEVOLEN · P+R bij Kralingse Zoom</span>':'')+'<strong>'+escapeGarage(g.name)+'</strong><small>'+escapeGarage(g.type)+' · '+escapeGarage(g.address)+'</small></div></button>').join('');
+ nearbyGarages=(kuip?kuipGarages:curatedGarages).map(g=>({...g}));
+ root.innerHTML=nearbyGarages.map((g,i)=>'<button type="button" class="alt-card '+(i===0?'best':'')+'" data-garage="'+i+'"><div class="alt-photo" style="font-size:52px;background:linear-gradient(140deg,#d6e7e5,#a8c9c4);display:grid;place-items:center">🏢</div><div class="alt-body">'+(i===0?'<span class="alt-pill">'+escapeGarage(g.recommendation||'★ AANBEVOLEN · P+R bij Kralingse Zoom')+'</span>':'')+'<strong>'+escapeGarage(g.name)+'</strong><small>'+escapeGarage(g.type)+' · '+escapeGarage(g.address)+'</small></div></button>').join('');
  root.querySelectorAll('[data-garage]').forEach(b=>b.onclick=()=>openGarage(Number(b.dataset.garage)));
- $('garageDisclaimer').textContent='Drie bestaande locaties, geen live beschikbaarheid of afstandsranglijst. Afbeeldingen zijn illustraties, geen echte garagefoto’s.';
+ $('garageDisclaimer').textContent='Drie bestaande locaties. Geen live beschikbaarheid. Bij De Kuip kunnen op wedstrijddagen parkeerkaarten verplicht zijn. Afbeeldingen zijn illustraties.';
 }
 function openGarage(i){
  const g=nearbyGarages[i];if(!g)return;
