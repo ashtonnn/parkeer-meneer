@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, send_from_directory, request, session
 from pathlib import Path
 import requests, xml.etree.ElementTree as ET
-import os, re
+import os, re, time, threading
 from datetime import timedelta
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -150,42 +150,76 @@ def admin_users():
         user["is_admin"]=user["email"]==admin_email
     return jsonify(users=users,count=len(users))
 
-WFS = "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeervoorzieningen/MapServer/WFSServer"
-HEADERS = {"User-Agent": "ParkeerMeneer/0.3 educational prototype"}
+WFS = os.environ.get("ROTTERDAM_PARKING_WFS", "https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeervoorzieningen/MapServer/WFSServer")
+HEADERS = {"User-Agent": "ParkeerMeneer/0.4 educational prototype"}
+_parking_cache = {"expires": 0, "payload": None}
+_parking_lock = threading.Lock()
+
+def _parking_position(geometry):
+    """Get representative lon/lat for Point, MultiPoint, LineString or Polygon GeoJSON."""
+    if not isinstance(geometry, dict): return None
+    kind, coords = geometry.get("type"), geometry.get("coordinates")
+    if kind == "Point" and isinstance(coords, list) and len(coords) >= 2: return coords[:2]
+    if kind == "MultiPoint" and coords: return coords[0][:2]
+    if kind == "LineString" and coords: return coords[len(coords)//2][:2]
+    if kind == "MultiLineString" and coords and coords[0]: return coords[0][len(coords[0])//2][:2]
+    if kind == "Polygon" and coords and coords[0]:
+        ring=coords[0];return [sum(p[0] for p in ring)/len(ring),sum(p[1] for p in ring)/len(ring)]
+    if kind == "MultiPolygon" and coords and coords[0] and coords[0][0]:
+        ring=coords[0][0];return [sum(p[0] for p in ring)/len(ring),sum(p[1] for p in ring)/len(ring)]
+    return None
+
 @app.get("/")
 def home():
     return send_from_directory(ROOT, "index.html")
+
 @app.get("/api/health")
 def health():
-    return jsonify(status="ok", geographic_source="Rotterdam WFS", occupancy="synthetic")
+    return jsonify(status="ok", geographic_source="Rotterdam parking WFS (best effort)", occupancy="synthetic")
+
 @app.get("/api/parking")
 def parking():
+    now=time.monotonic()
+    with _parking_lock:
+        if _parking_cache["payload"] is not None and now < _parking_cache["expires"]:
+            return jsonify(_parking_cache["payload"])
     try:
-        r = requests.get(WFS, params={"service":"WFS","request":"GetCapabilities","version":"2.0.0"}, headers=HEADERS, timeout=12)
-        r.raise_for_status()
-        xml = ET.fromstring(r.content)
-        types = [x.text for ft in xml.findall(".//{*}FeatureType") for x in [ft.find("{*}Name")] if x is not None and x.text]
-        if not types: raise ValueError("Geen WFS-featuretypes beschikbaar")
-        features = []
-        for typename in types[:4]:
-            q = {"service":"WFS","version":"2.0.0","request":"GetFeature","typeNames":typename,"count":250,"outputFormat":"application/json","srsName":"EPSG:4326"}
-            res = requests.get(WFS,params=q,headers=HEADERS,timeout=18)
-            if not res.ok or "json" not in res.headers.get("content-type","").lower(): continue
-            for f in res.json().get("features",[]):
-                g=f.get("geometry") or {}
-                typ=g.get("type")
-                coords=g.get("coordinates")
-                if typ=="Point" and coords and len(coords)>=2: lon,lat=coords[:2]
-                elif typ=="MultiPoint" and coords: lon,lat=coords[0][:2]
-                else: continue
-                if 51.7<float(lat)<52.2 and 3.7<float(lon)<4.9:
-                    props=f.get("properties") or {}
-                    name=next((str(v) for k,v in props.items() if any(x in k.lower() for x in ("naam","name","straat")) and v), "Parkeervoorziening")
-                    features.append({"id":str(f.get("id") or len(features)),"name":name[:80],"lat":float(lat),"lon":float(lon),"source":"Rotterdam WFS"})
-        if not features: raise ValueError("Geen bruikbare puntobjecten gevonden; WFS kan andere geometrieën aanbieden")
-        return jsonify(mode="live",features=features[:300],types=types,occupancy="not_available")
-    except Exception as exc:
-        return jsonify(mode="unavailable",features=[],message=str(exc)[:300],occupancy="not_available"),503
+        response=requests.get(WFS,params={"service":"WFS","request":"GetCapabilities","version":"2.0.0"},headers=HEADERS,timeout=8)
+        response.raise_for_status()
+        root=ET.fromstring(response.content)
+        types=[el.text for ft in root.findall(".//{*}FeatureType") for el in [ft.find("{*}Name")] if el is not None and el.text]
+        if not types: raise ValueError("Geen WFS-featuretypes gevonden")
+        features=[]; seen=set()
+        for typename in types[:6]:
+            if len(features)>=300:break
+            params={"service":"WFS","version":"2.0.0","request":"GetFeature","typeNames":typename,"count":250,"outputFormat":"application/json","srsName":"EPSG:4326"}
+            try:
+                res=requests.get(WFS,params=params,headers=HEADERS,timeout=9)
+                if not res.ok or "json" not in res.headers.get("content-type","").lower():continue
+                data=res.json()
+            except (requests.RequestException,ValueError):continue
+            for feature in data.get("features",[]):
+                position=_parking_position(feature.get("geometry"))
+                if position is None:continue
+                try:lon,lat=map(float,position)
+                except (ValueError,TypeError):continue
+                if not (51.7<lat<52.2 and 3.7<lon<4.9):continue
+                props=feature.get("properties") or {}
+                name=next((str(v) for k,v in props.items() if any(t in k.lower() for t in ("naam","name","straat","type")) and v is not None),"Parkeervoorziening")
+                key=(round(lat,6),round(lon,6),typename)
+                if key in seen:continue
+                seen.add(key)
+                features.append({"id":str(feature.get("id") or len(features))[:100],"name":name[:80],"lat":lat,"lon":lon,"source":"Rotterdam WFS","layer":typename[:100]})
+                if len(features)>=300:break
+        if not features:raise ValueError("Geen bruikbare geografische objecten ontvangen")
+        payload={"mode":"live","features":features,"types":types,"occupancy":"not_available","source":"Rotterdam parking WFS","sample_limited":True}
+        ttl=900
+    except (requests.RequestException,ValueError,ET.ParseError) as exc:
+        payload={"mode":"unavailable","features":[],"message":str(exc)[:180],"occupancy":"not_available","source":"Rotterdam parking WFS"}
+        ttl=120
+    with _parking_lock:
+        _parking_cache.update(expires=time.monotonic()+ttl,payload=payload)
+    return jsonify(payload)
 
 @app.get("/api/nearby-garages")
 def nearby_garages():
