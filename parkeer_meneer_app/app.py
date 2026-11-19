@@ -186,5 +186,25 @@ def parking():
         return jsonify(mode="live",features=features[:300],types=types,occupancy="not_available")
     except Exception as exc:
         return jsonify(mode="unavailable",features=[],message=str(exc)[:300],occupancy="not_available"),503
+
+@app.get("/api/nearby-garages")
+def nearby_garages():
+    try:
+        lat=float(request.args.get("lat",""))
+        lon=float(request.args.get("lon",""))
+        if not (51.7<lat<52.2 and 3.7<lon<4.9):
+            return jsonify(error="Locatie buiten Rotterdam"),400
+    except (ValueError,TypeError):
+        return jsonify(error="Ongeldige coördinaten"),400
+    query=f'[out:json][timeout:8];(nwr["amenity"="parking"]["parking"="multi-storey"](around:4500,{lat},{lon});nwr["amenity"="parking"]["parking"="underground"](around:4500,{lat},{lon}););out center 50;'
+    for url in ("https://overpass.kumi.systems/api/interpreter","https://overpass.private.coffee/api/interpreter","https://overpass-api.de/api/interpreter"):
+        try:
+            res=requests.post(url,data={"data":query},timeout=7)
+            res.raise_for_status()
+            return jsonify(elements=res.json().get("elements",[]))
+        except (requests.RequestException,ValueError):
+            continue
+    return jsonify(error="Kaartdienst tijdelijk niet bereikbaar",elements=[]),503
+
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=False)
