@@ -97,7 +97,7 @@ async function loadNearbyGarages(){
  if(!nearbyGarages.length)throw Error('Geen locaties gevonden');
  root.innerHTML=nearbyGarages.map((g,i)=>'<button type="button" class="alt-card '+(i===0?'best':'')+'" data-garage="'+i+'"><div class="alt-photo">🏢</div><div class="alt-body">'+(i===0?'<span class="alt-pill">★ AANBEVOLEN • dichtstbij</span>':'')+'<strong>'+escapeGarage(g.name)+'</strong><small>'+g.distance+' meter • tarieven bekijken</small></div></button>').join('');
  root.querySelectorAll('[data-garage]').forEach(b=>b.onclick=()=>openGarage(Number(b.dataset.garage)));
- }catch(err){nearbyGarages=[];root.innerHTML='<p class="muted">De garagezoekdienst is tijdelijk niet bereikbaar. Probeer het opnieuw.</p><button type="button" class="btn secondary" onclick="loadNearbyGarages()">Opnieuw proberen</button>'}
+ }catch(err){nearbyGarages=[];root.innerHTML='<p class="muted">De kaartdienst geeft momenteel geen garages terug. Je kunt direct alternatieven op de kaart bekijken.</p><a class="btn secondary" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/search/?api=1&query='+encodeURIComponent('parkeergarages bij '+chosen.name+', Rotterdam')+'">Bekijk parkeergarages op de kaart ↗</a><button type="button" class="btn secondary" onclick="loadNearbyGarages()">Opnieuw proberen</button>'}
 }
 function openGarage(i){
  const g=nearbyGarages[i];if(!g)return;
