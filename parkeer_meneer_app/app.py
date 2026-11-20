@@ -177,6 +177,46 @@ def home():
 def health():
     return jsonify(status="ok", geographic_source="Rotterdam parking WFS (best effort)", occupancy="synthetic")
 
+# School-provided Cityverse/Open Urban Platform API references (IoT en API data Brian).
+# This endpoint retrieves catalog metadata, not live parking occupancy or 3D geometry.
+_cityverse_cache={"expires":0.0,"payload":None}
+_cityverse_lock=threading.Lock()
+
+@app.get("/api/cityverse/catalog")
+def cityverse_catalog():
+    now=time.monotonic()
+    with _cityverse_lock:
+        if _cityverse_cache["payload"] is not None and now < _cityverse_cache["expires"]:
+            return jsonify(_cityverse_cache["payload"])
+    endpoints={
+        "hubs":"https://hub.clearly.app/api/hubs",
+        "datasets":"https://hub.clearly.app/api/datasets",
+    }
+    results={}
+    for kind,url in endpoints.items():
+        try:
+            response=requests.get(url,headers={"Accept":"application/json"},timeout=6)
+            response.raise_for_status()
+            data=response.json()
+            if isinstance(data,list):
+                items=data
+            elif isinstance(data,dict):
+                items=next((data[k] for k in ("items","results","data") if isinstance(data.get(k),list)),[])
+            else:
+                items=[]
+            # Bounded, metadata-only sample; do not expose arbitrary source fields.
+            sample=[]
+            for item in items[:30]:
+                if not isinstance(item,dict):continue
+                sample.append({"id":str(item.get("id",""))[:100],"name":str(item.get("name") or item.get("title") or "")[:160]})
+            results[kind]={"status":"connected","count_returned":len(items),"sample":sample,"url":url}
+        except (requests.RequestException,ValueError,TypeError) as exc:
+            results[kind]={"status":"unavailable","error":str(exc)[:160],"url":url}
+    payload={"source_document":"IoT en API data Brian (school)","type":"catalog_metadata","occupancy":"synthetic_not_from_cityverse","three_d_geometry":"not_integrated","sources":results}
+    with _cityverse_lock:
+        _cityverse_cache.update(expires=time.monotonic()+300,payload=payload)
+    return jsonify(payload)
+
 @app.get("/api/parking")
 def parking():
     now=time.monotonic()
