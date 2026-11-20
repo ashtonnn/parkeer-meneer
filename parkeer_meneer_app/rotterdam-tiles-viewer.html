@@ -6,39 +6,67 @@
 html,body,#map{width:100%;height:100%;margin:0;overflow:hidden;background:#122b38;font:14px system-ui,sans-serif;color:#fff}
 #map{position:absolute;inset:0}
 #top,#bottom{position:absolute;left:12px;right:12px;z-index:10;background:#0c2639e8;padding:11px 14px;border-radius:12px;box-shadow:0 2px 12px #0017;pointer-events:none}
-#top{top:12px;max-width:540px}#top strong{display:block;font-size:16px;margin-bottom:4px}
+#top{top:12px;max-width:540px;pointer-events:auto}#top strong{display:block;font-size:16px;margin-bottom:4px}#tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}#tools button{padding:8px 10px;border:1px solid #8ac1ca;border-radius:9px;background:#dff3f1;color:#11383e;font-weight:700;font-size:13px;cursor:pointer}
 #bottom{bottom:12px;max-width:640px;font-size:12px}#state{font-size:13px;margin-top:5px;color:#b9edf2}
 .cesium-viewer-bottom{left:auto;right:8px;bottom:74px}
 </style></head><body>
 <div id="map"></div>
 <div id="top"><strong>Rotterdam 3D · Kralingse Zoom</strong>
 <div>Gegevens: officiële 3D Rotterdam-gebouwen met textuur (LoD2). Dit is een experimentele weergave, geen Street View.</div>
-<div id="state" role="status">Echte Rotterdamse 3D Tiles laden…</div></div>
-<div id="bottom">Gebruik één vinger om te draaien en twee vingers om te zoomen. De gekleurde proefobjecten zijn <b>gesimuleerd</b> en niet gekoppeld aan echte parkeervakken. Groen = vrij · Rood = bezet · Blauw = toegankelijk. Geen live parkeerinformatie.</div>
+<div id="state" role="status">Echte Rotterdamse 3D Tiles laden…</div><div id="tools"><button id="reset" type="button">📍 Bekijk Kralingse Zoom</button><button id="overview" type="button">🔭 Overzicht</button><button id="toggle" type="button" aria-pressed="true">🏙️ 3D-laag aan</button></div></div>
+<div id="bottom">De kaart is van OpenStreetMap; 3D-gebouwen zijn van Rotterdam 3D. Tik op ‘Bekijk Kralingse Zoom’ als je een leeg beeld ziet. Gebruik één vinger om te draaien en twee om te zoomen. De gekleurde proefobjecten zijn <b>gesimuleerd</b> en niet gekoppeld aan echte parkeervakken. Groen = vrij · Rood = bezet · Blauw = toegankelijk. Geen live parkeerinformatie.</div>
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.131/Build/Cesium/Cesium.js"></script>
 <script>
 (async()=>{
- const state=document.getElementById('state');
+ const state=document.getElementById('state'),reset=document.getElementById('reset'),overview=document.getElementById('overview'),toggle=document.getElementById('toggle');
  try{
   if(!window.Cesium)throw Error('3D-viewer kon niet worden geladen');
   const C=window.Cesium;
   const viewer=new C.Viewer('map',{animation:false,timeline:false,homeButton:false,geocoder:false,baseLayerPicker:false,baseLayer:false,terrainProvider:new C.EllipsoidTerrainProvider(),sceneModePicker:false,fullscreenButton:false,navigationHelpButton:false,infoBox:false,selectionIndicator:false,shadows:false});
-  viewer.scene.globe.show=false;
-  viewer.scene.skyAtmosphere.show=false;
+  viewer.scene.globe.show=true;
+  viewer.scene.globe.baseColor=C.Color.fromCssColorString('#dbe5e1');
+  viewer.scene.globe.enableLighting=false;
+  viewer.scene.globe.depthTestAgainstTerrain=false;
+  viewer.scene.skyAtmosphere.show=true;
   viewer.scene.backgroundColor=C.Color.fromCssColorString('#a3cbdf');
-  viewer.camera.setView({destination:C.Cartesian3.fromDegrees(4.5335,51.9261,155),orientation:{heading:C.Math.toRadians(4),pitch:C.Math.toRadians(-62),roll:0}});
+  // Keep a visible, real 2D geographic reference even if 3D tiles fail on a phone.
+  try{
+   viewer.imageryLayers.addImageryProvider(new C.UrlTemplateImageryProvider({
+    url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png',maximumLevel:19,
+    credit:'© OpenStreetMap-bijdragers'
+   }));
+  }catch(imageryError){state.textContent='Basiskaart kon niet starten; 3D wordt apart geprobeerd.';}
+  const target=C.Cartesian3.fromDegrees(4.5335,51.9261,5);
+  function lookAtZoom(range=650){
+   viewer.camera.lookAt(target,new C.HeadingPitchRange(C.Math.toRadians(5),C.Math.toRadians(-58),range));
+   viewer.camera.lookAtTransform(C.Matrix4.IDENTITY);
+  }
+  lookAtZoom();
+  reset.onclick=()=>lookAtZoom(650);
+  overview.onclick=()=>lookAtZoom(1700);
+
   const url='https://www.3drotterdam.nl/datasource-data/a6aee273-9406-41c4-a504-de2a59f7d514/tileset.json';
   const tiles=await C.Cesium3DTileset.fromUrl(url,{maximumScreenSpaceError:18,maximumMemoryUsage:220});
   viewer.scene.primitives.add(tiles);
+  toggle.onclick=()=>{
+   tiles.show=!tiles.show;
+   toggle.setAttribute('aria-pressed',String(tiles.show));
+   toggle.textContent=tiles.show?'🏙️ 3D-laag aan':'🗺️ Alleen de kaart';
+   state.textContent=tiles.show?'3D-laag ingeschakeld · controleer of gebouwen zichtbaar zijn':'Alleen de onderliggende Rotterdamkaart wordt getoond';
+  };
+
   // Demonstration markers only; no inference about physically existing bays.
   const points=[[-.00026,-.00024,'vrij'],[-.00016,-.00024,'bezet'],[-.00006,-.00024,'bezet'],[.00004,-.00024,'toegankelijk'],[.00014,-.00024,'vrij'],[.00024,-.00024,'bezet']];
   const colors={vrij:C.Color.LIME.withAlpha(.88),bezet:C.Color.RED.withAlpha(.88),toegankelijk:C.Color.DODGERBLUE.withAlpha(.88)};
   for(let i=0;i<points.length;i++){
    let [latDelta,lonDelta,type]=points[i];
-   viewer.entities.add({name:'Illustratief vak '+(i+1),position:C.Cartesian3.fromDegrees(4.5335+lonDelta,51.9261+latDelta,2),ellipse:{semiMajorAxis:3.5,semiMinorAxis:2.2,material:colors[type],outline:true,outlineColor:C.Color.WHITE},label:{text:(i+1)+' · '+type,font:'12px sans-serif',style:C.LabelStyle.FILL_AND_OUTLINE,outlineWidth:3,verticalOrigin:C.VerticalOrigin.BOTTOM,pixelOffset:new C.Cartesian2(0,-12),disableDepthTestDistance:Number.POSITIVE_INFINITY}});
+   viewer.entities.add({name:'Illustratief vak '+(i+1),position:C.Cartesian3.fromDegrees(4.5335+lonDelta,51.9261+latDelta,15),point:{pixelSize:12,color:colors[type],outlineColor:C.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},label:{text:(i+1)+' · '+type,font:'12px sans-serif',style:C.LabelStyle.FILL_AND_OUTLINE,outlineWidth:3,verticalOrigin:C.VerticalOrigin.BOTTOM,pixelOffset:new C.Cartesian2(0,-14),disableDepthTestDistance:Number.POSITIVE_INFINITY}});
   }
-  state.textContent='3D Tiles-manifest verwerkt · zichtbare gebouwtiles worden geladen…';
-  tiles.tileLoad.addEventListener(()=>{state.textContent='Echte 3D Rotterdam-tiles ontvangen · bezetting blijft fictief';});
+  state.textContent='Rotterdamkaart zichtbaar · 3D Tiles worden geladen. Gebruik de camera-knop als gebouwen ontbreken.';
+  let loadedTiles=0;
+  tiles.tileLoad.addEventListener(()=>{loadedTiles++;state.textContent=loadedTiles+' Rotterdamse 3D-tile(s) ontvangen · zichtbaarheid op dit toestel nog te controleren';});
+  tiles.tileFailed.addEventListener(error=>{state.textContent='Een 3D-tile kon niet worden geladen: '+String(error?.message||'netwerkfout').slice(0,90);});
+
   viewer.scene.renderError.addEventListener((_scene,error)=>{state.textContent='Renderfout: '+String(error?.message||error).slice(0,140);});
  }catch(error){
   state.textContent='3D Tiles laden mislukt: '+String(error?.message||error).slice(0,150)+'. De bestaande parkeersimulatie blijft beschikbaar.';
