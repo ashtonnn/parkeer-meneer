@@ -254,6 +254,26 @@ def cityverse_rotterdam_3d():
     except (requests.RequestException,ValueError,TypeError) as exc:
         return jsonify(status="unavailable",source="School OUP / Clearly.Hub",error=str(exc)[:180],geometry_loaded=False),503
 
+@app.get("/api/cityverse/tiles-check")
+def cityverse_tiles_check():
+    """Verify a specific 3D Tiles tileset URL discovered via the school OUP catalog."""
+    # Fixed allowlisted URL: no user-controlled fetch destination.
+    url="https://www.3dtilesnederland.nl/tiles/1.0/explicit/3DI_NLDT_Rotterdam/900/tileset.json"
+    try:
+        response=requests.get(url,headers={"Accept":"application/json"},timeout=12)
+        response.raise_for_status()
+        if len(response.content)>2000000:
+            raise ValueError("Tileset manifest te groot")
+        data=response.json()
+        if not isinstance(data,dict):
+            raise ValueError("Geen JSON-object")
+        asset=data.get("asset") or {}
+        root=data.get("root") or {}
+        valid=isinstance(asset,dict) and isinstance(root,dict) and bool(root)
+        return jsonify(status="verified" if valid else "invalid_manifest",source="Cityverse school catalog reference",url=url,tileset_version=str(asset.get("version",""))[:40] if isinstance(asset,dict) else "",root_present=bool(root),root_bounding_volume=bool(root.get("boundingVolume")) if isinstance(root,dict) else False,geometry_loaded_in_app=False)
+    except (requests.RequestException,ValueError,TypeError) as exc:
+        return jsonify(status="unavailable",source="Cityverse school catalog reference",url=url,error=str(exc)[:180],geometry_loaded_in_app=False),503
+
 @app.get("/api/parking")
 def parking():
     now=time.monotonic()
