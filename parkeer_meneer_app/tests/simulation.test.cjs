@@ -6,7 +6,7 @@ const vm=require('node:vm');
 const path=require('node:path');
 
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');
-const scripts=[...html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/g)].map(m=>m[1]).filter(Boolean);
+const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(m=>m[1]).filter(Boolean);
 assert(scripts.length>=2,'JavaScript ontbreekt in index.html');
 for(const script of scripts){new vm.Script(script);}
 assert(!html.includes('id="view3d"'),'Het oude 3D-experiment mag niet zichtbaar zijn in de hoofdapp');
