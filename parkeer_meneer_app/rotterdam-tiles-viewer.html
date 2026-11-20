@@ -62,7 +62,7 @@ html,body,#map{width:100%;height:100%;margin:0;overflow:hidden;background:#122b3
    let [latDelta,lonDelta,type]=points[i];
    viewer.entities.add({name:'Illustratief vak '+(i+1),position:C.Cartesian3.fromDegrees(4.5335+lonDelta,51.9261+latDelta,15),point:{pixelSize:12,color:colors[type],outlineColor:C.Color.WHITE,outlineWidth:2,disableDepthTestDistance:Number.POSITIVE_INFINITY},label:{text:(i+1)+' · '+type,font:'12px sans-serif',style:C.LabelStyle.FILL_AND_OUTLINE,outlineWidth:3,verticalOrigin:C.VerticalOrigin.BOTTOM,pixelOffset:new C.Cartesian2(0,-14),disableDepthTestDistance:Number.POSITIVE_INFINITY}});
   }
-  state.textContent='Rotterdamkaart zichtbaar · 3D Tiles worden geladen. Gebruik de camera-knop als gebouwen ontbreken.';
+  state.textContent='Rotterdamkaart en 3D Tiles worden geladen. Gebruik de camera-knop als gebouwen ontbreken.';
   let loadedTiles=0;
   tiles.tileLoad.addEventListener(()=>{loadedTiles++;state.textContent=loadedTiles+' Rotterdamse 3D-tile(s) ontvangen · zichtbaarheid op dit toestel nog te controleren';});
   tiles.tileFailed.addEventListener(error=>{state.textContent='Een 3D-tile kon niet worden geladen: '+String(error?.message||'netwerkfout').slice(0,90);});
