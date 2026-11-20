@@ -6,19 +6,19 @@
 html,body,#map{width:100%;height:100%;margin:0;overflow:hidden;background:#122b38;font:14px system-ui,sans-serif;color:#fff}
 #map{position:absolute;inset:0}
 #top,#bottom{position:absolute;left:12px;right:12px;z-index:10;background:#0c2639e8;padding:11px 14px;border-radius:12px;box-shadow:0 2px 12px #0017;pointer-events:none}
-#top{top:12px;max-width:540px;pointer-events:auto}#top strong{display:block;font-size:16px;margin-bottom:4px}#tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}#tools button{padding:8px 10px;border:1px solid #8ac1ca;border-radius:9px;background:#dff3f1;color:#11383e;font-weight:700;font-size:13px;cursor:pointer}
+#top{top:12px;max-width:540px;pointer-events:auto}#top strong{display:block;font-size:16px;margin-bottom:4px}#tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}#tools button,#tools a{display:inline-flex;align-items:center;text-decoration:none;padding:8px 10px;border:1px solid #8ac1ca;border-radius:9px;background:#dff3f1;color:#11383e;font-weight:700;font-size:13px;cursor:pointer}
 #bottom{bottom:12px;max-width:640px;font-size:12px}#state{font-size:13px;margin-top:5px;color:#b9edf2}#moveControls{position:absolute;bottom:118px;right:13px;z-index:15;display:grid;grid-template-columns:repeat(3,49px);gap:5px}#moveControls button{height:45px;border:1px solid #b6e8e5;border-radius:10px;background:#102f3de8;color:#fff;font-size:22px;touch-action:manipulation;cursor:pointer}#moveControls button:active{background:#117b81}@media(max-width:550px){#top{left:7px;right:7px;top:7px;padding:9px 11px;font-size:12px}#tools button{font-size:12px;padding:6px 8px}#bottom{left:7px;right:7px;bottom:7px;font-size:11px;padding:8px 11px}#moveControls{bottom:100px;right:9px;grid-template-columns:repeat(3,42px)}#moveControls button{height:40px}}
 .cesium-viewer-bottom{left:auto;right:8px;bottom:74px}
 </style></head><body>
 <div id="map"></div>
 <div id="top"><strong>Rotterdam 3D · Kralingse Zoom</strong>
-<div>Virtuele straatcamera met echte Rotterdamse 3D-gebouwdata. Beeldkwaliteit afhankelijk van de 3D-tiles, geen Google Street View.</div>
-<div id="state" role="status">3D Rotterdam wordt geladen…</div><div id="tools"><button id="reset" type="button">🚶 Straatniveau</button><button id="overview" type="button">🗺️ Bovenaanzicht</button><button id="toggle" type="button" aria-pressed="true">🏙️ 3D-laag aan</button></div></div>
-<div id="bottom">Straatniveau: sleep om rond te kijken, gebruik de pijlen om te lopen. Bovenaanzicht is alleen voor oriëntatie. Gebouwen: Rotterdam 3D · Kaart: © OpenStreetMap. Nog geen echte of gesimuleerde auto's in deze viewer; de parkeersimulatie blijft apart beschikbaar.</div><div id="moveControls" aria-label="Beweeg door de 3D-straat"><span></span><button id="forward" type="button" aria-label="Vooruit lopen">↑</button><span></span><button id="left" type="button" aria-label="Links draaien">↶</button><button id="backward" type="button" aria-label="Achteruit lopen">↓</button><button id="right" type="button" aria-label="Rechts draaien">↷</button></div>
+<div>Loop op ooghoogte door Kralingse Zoom. De gebouwen komen uit Rotterdamse 3D-data; de parkeerplaatsen hieronder zijn uitsluitend een fictieve demonstratie.</div>
+<div id="state" role="status">3D Rotterdam wordt geladen…</div><div id="tools"><button id="reset" type="button">🚶 Straatniveau</button><button id="overview" type="button">🗺️ Bovenaanzicht</button><button id="toggle" type="button" aria-pressed="true">🏙️ 3D-laag aan</button><button id="samples" type="button" aria-pressed="true">🚗 Demo parkeren aan</button><a href="/" aria-label="Terug naar Parkeer Meneer">← Parkeer Meneer</a></div><div id="legend" style="margin-top:7px;font-size:12px">🔴 Bezet met demo-auto · 🟢 Vrij · 🔵 Toegankelijk · allemaal gesimuleerd</div></div>
+<div id="bottom">Straatniveau: sleep om rond te kijken en gebruik de pijlen om te lopen. De 4 voorbeeldplekken en auto's zijn synthetisch en NIET gekoppeld aan echte parkeervakken of sensoren. Gebouwen: Rotterdam 3D · Kaart: © OpenStreetMap.</div><div id="moveControls" aria-label="Beweeg door de 3D-straat"><span></span><button id="forward" type="button" aria-label="Vooruit lopen">↑</button><span></span><button id="left" type="button" aria-label="Links draaien">↶</button><button id="backward" type="button" aria-label="Achteruit lopen">↓</button><button id="right" type="button" aria-label="Rechts draaien">↷</button></div>
 <script src="https://cesium.com/downloads/cesiumjs/releases/1.131/Build/Cesium/Cesium.js"></script>
 <script>
 (async()=>{
- const state=document.getElementById('state'),reset=document.getElementById('reset'),overview=document.getElementById('overview'),toggle=document.getElementById('toggle');
+ const state=document.getElementById('state'),reset=document.getElementById('reset'),overview=document.getElementById('overview'),toggle=document.getElementById('toggle'),samplesButton=document.getElementById('samples');
  try{
   if(!window.Cesium)throw Error('3D-viewer kon niet worden geladen');
   const C=window.Cesium;
@@ -44,7 +44,7 @@ html,body,#map{width:100%;height:100%;margin:0;overflow:hidden;background:#122b3
   const controls=viewer.scene.screenSpaceCameraController;
   function positionCamera(){
     viewer.camera.setView({
-      destination:C.Cartesian3.fromDegrees(lon,lat,3.5),
+      destination:C.Cartesian3.fromDegrees(lon,lat,1.75),
       orientation:{heading:C.Math.toRadians(heading),pitch:C.Math.toRadians(pitch),roll:0}
     });
   }
@@ -105,6 +105,56 @@ html,body,#map{width:100%;height:100%;margin:0;overflow:hidden;background:#122b3
     else if(event.key==='ArrowLeft'||event.key.toLowerCase()==='a'){heading-=10;streetView();}
     else if(event.key==='ArrowRight'||event.key.toLowerCase()==='d'){heading+=10;streetView();}
   });
+
+  // Four clearly labeled fictional examples to demonstrate sensor statuses.
+  // Their positions do NOT represent surveyed parking bays or live measurements.
+  const sampleEntities=[];
+  const places=[
+    {north:.00013,east:-.000055,status:'Bezet',hex:'#ed5555',car:true},
+    {north:.00021,east:.000038,status:'Vrij',hex:'#2bcf86',car:false},
+    {north:.00030,east:-.000052,status:'Toegankelijk',hex:'#4d99fb',car:false},
+    {north:.00039,east:.000032,status:'Bezet',hex:'#ed5555',car:true}
+  ];
+  for(let i=0;i<places.length;i++){
+    const p=places[i], longitude=START.lon+p.east, latitude=START.lat+p.north;
+    const color=C.Color.fromCssColorString(p.hex);
+    sampleEntities.push(viewer.entities.add({
+      name:'Gesimuleerde parkeerplek '+(i+1),
+      position:C.Cartesian3.fromDegrees(longitude,latitude,.12),
+      ellipse:{semiMajorAxis:4.2,semiMinorAxis:2.4,height:.08,
+        material:color.withAlpha(.50),outline:true,outlineColor:color}
+    }));
+    if(p.car){
+      sampleEntities.push(viewer.entities.add({
+        position:C.Cartesian3.fromDegrees(longitude,latitude,.85),
+        box:{dimensions:new C.Cartesian3(1.9,4.4,1.4),
+          material:C.Color.fromCssColorString('#344654'),outline:true,outlineColor:color}
+      }));
+      sampleEntities.push(viewer.entities.add({
+        position:C.Cartesian3.fromDegrees(longitude,latitude,1.65),
+        box:{dimensions:new C.Cartesian3(1.65,2.3,.55),
+          material:C.Color.fromCssColorString('#80b6d3').withAlpha(.95)}
+      }));
+    }
+    sampleEntities.push(viewer.entities.add({
+      name:'Voorbeeld '+(i+1)+' · '+p.status,
+      position:C.Cartesian3.fromDegrees(longitude,latitude,3.0),
+      label:{text:(i+1)+' · '+p.status+' (demo)',
+        font:'bold 13px sans-serif',style:C.LabelStyle.FILL_AND_OUTLINE,
+        fillColor:C.Color.WHITE,outlineColor:C.Color.BLACK,outlineWidth:3,
+        showBackground:true,backgroundColor:color.withAlpha(.85),
+        pixelOffset:new C.Cartesian2(0,-16),
+        disableDepthTestDistance:Number.POSITIVE_INFINITY}
+    }));
+  }
+  let sampleVisible=true;
+  samplesButton.onclick=()=>{
+    sampleVisible=!sampleVisible;
+    for(const entity of sampleEntities)entity.show=sampleVisible;
+    samplesButton.setAttribute('aria-pressed',String(sampleVisible));
+    samplesButton.textContent=sampleVisible?'🚗 Demo parkeren aan':'🚗 Demo parkeren uit';
+    state.textContent=sampleVisible?'4 fictieve parkeervoorbeelden zichtbaar · geen live sensoren':'Demo parkeren verborgen · echte geografische 3D-laag ongewijzigd';
+  };
   streetView(true);
 
   const url='https://www.3drotterdam.nl/datasource-data/a6aee273-9406-41c4-a504-de2a59f7d514/tileset.json';
