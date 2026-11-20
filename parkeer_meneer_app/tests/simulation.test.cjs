@@ -53,7 +53,7 @@ for(const name of cities){
  context.setTimeout=(fn)=>fn();
  context.exportSimulation();
  assert.equal(clicks,1,name+': CSV is niet geactiveerd');
- assert.equal(capturedCsv.split('\\r\\n').length,2305,name+': export moet 2304 fictieve records plus kop bevatten');
+ assert.equal(capturedCsv.split('\r\n').length,2305,name+': export moet 2304 fictieve records plus kop bevatten');
  assert(downloadedName.endsWith('.csv'),name+': CSV bestandsnaam ontbreekt');
  const result=context.backtestForecast();
  assert.equal(result.n,89);
