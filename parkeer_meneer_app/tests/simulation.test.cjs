@@ -42,11 +42,24 @@ for(const name of cities){
  assert(new Set(signature).size>1,name+': bezetting verandert niet in de tijd');
  const recheck=context.stateAt(12,0).map(b=>Number(b.occupied));
  assert.deepEqual(recheck,context.stateAt(12,0).map(b=>Number(b.occupied)),name+': data niet reproduceerbaar');
+ // Test de echte exportfunctie met een nagemaakte browseromgeving.
+ let capturedCsv='',downloadedName='',clicks=0;
+ context.Blob=class {constructor(parts){capturedCsv=parts.join('');}};
+ context.URL={createObjectURL(){return 'blob:test'},revokeObjectURL(){}};
+ context.document={
+   body:{appendChild(){}},
+   createElement(){return {href:'',set download(x){downloadedName=x},click(){clicks++},remove(){}};}
+ };
+ context.setTimeout=(fn)=>fn();
+ context.exportSimulation();
+ assert.equal(clicks,1,name+': CSV is niet geactiveerd');
+ assert.equal(capturedCsv.split('\\r\\n').length,2305,name+': export moet 2304 fictieve records plus kop bevatten');
+ assert(downloadedName.endsWith('.csv'),name+': CSV bestandsnaam ontbreekt');
  const result=context.backtestForecast();
  assert.equal(result.n,89);
  assert(result.mae>=0&&result.baseline>=0&&Number.isFinite(result.mae));
  reports.push({straat:name,modelMaePp:Number(result.mae.toFixed(1)),nulmetingMaePp:Number(result.baseline.toFixed(1))});
 }
-console.log('Geslaagd: '+checks+' 15-minutenmomenten over '+cities.length+' straten. Alle scripts syntactisch geldig.');
+console.log('Geslaagd: '+checks+' 15-minutenmomenten, vijf CSV-exporten met 2304 regels, alle scripts syntactisch geldig.');
 console.table(reports);
 console.log('Let op: test met synthetische gegevens; browser, Render en externe PDOK/WFS worden hiermee NIET geverifieerd.');
