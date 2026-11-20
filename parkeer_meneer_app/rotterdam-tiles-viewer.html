@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Parkeer Meneer · Rotterdam 3D Tiles</title>
+<link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.131/Build/Cesium/Widgets/widgets.css">
+<style>
+html,body,#map{width:100%;height:100%;margin:0;overflow:hidden;background:#122b38;font:14px system-ui,sans-serif;color:#fff}
+#map{position:absolute;inset:0}
+#top,#bottom{position:absolute;left:12px;right:12px;z-index:10;background:#0c2639e8;padding:11px 14px;border-radius:12px;box-shadow:0 2px 12px #0017;pointer-events:none}
+#top{top:12px;max-width:540px}#top strong{display:block;font-size:16px;margin-bottom:4px}
+#bottom{bottom:12px;max-width:640px;font-size:12px}#state{font-size:13px;margin-top:5px;color:#b9edf2}
+.cesium-viewer-bottom{left:auto;right:8px;bottom:74px}
+</style></head><body>
+<div id="map"></div>
+<div id="top"><strong>Rotterdam 3D · Kralingse Zoom</strong>
+<div>Gegevens: officiële 3D Rotterdam-gebouwen met textuur (LoD2). Dit is een experimentele weergave, geen Street View.</div>
+<div id="state" role="status">Echte Rotterdamse 3D Tiles laden…</div></div>
+<div id="bottom">Gebruik één vinger om te draaien en twee vingers om te zoomen. De gekleurde proefobjecten zijn <b>gesimuleerd</b> en niet gekoppeld aan echte parkeervakken. Groen = vrij · Rood = bezet · Blauw = toegankelijk. Geen live parkeerinformatie.</div>
+<script src="https://cesium.com/downloads/cesiumjs/releases/1.131/Build/Cesium/Cesium.js"></script>
+<script>
+(async()=>{
+ const state=document.getElementById('state');
+ try{
+  if(!window.Cesium)throw Error('3D-viewer kon niet worden geladen');
+  const C=window.Cesium;
+  const viewer=new C.Viewer('map',{animation:false,timeline:false,homeButton:false,geocoder:false,baseLayerPicker:false,baseLayer:false,terrainProvider:new C.EllipsoidTerrainProvider(),sceneModePicker:false,fullscreenButton:false,navigationHelpButton:false,infoBox:false,selectionIndicator:false,shadows:false});
+  viewer.scene.globe.show=false;
+  viewer.scene.skyAtmosphere.show=false;
+  viewer.scene.backgroundColor=C.Color.fromCssColorString('#a3cbdf');
+  viewer.camera.setView({destination:C.Cartesian3.fromDegrees(4.5335,51.9261,155),orientation:{heading:C.Math.toRadians(4),pitch:C.Math.toRadians(-62),roll:0}});
+  const url='https://www.3drotterdam.nl/datasource-data/a6aee273-9406-41c4-a504-de2a59f7d514/tileset.json';
+  const tiles=await C.Cesium3DTileset.fromUrl(url,{maximumScreenSpaceError:18,maximumMemoryUsage:220});
+  viewer.scene.primitives.add(tiles);
+  // Demonstration markers only; no inference about physically existing bays.
+  const points=[[-.00026,-.00024,'vrij'],[-.00016,-.00024,'bezet'],[-.00006,-.00024,'bezet'],[.00004,-.00024,'toegankelijk'],[.00014,-.00024,'vrij'],[.00024,-.00024,'bezet']];
+  const colors={vrij:C.Color.LIME.withAlpha(.88),bezet:C.Color.RED.withAlpha(.88),toegankelijk:C.Color.DODGERBLUE.withAlpha(.88)};
+  for(let i=0;i<points.length;i++){
+   let [latDelta,lonDelta,type]=points[i];
+   viewer.entities.add({name:'Illustratief vak '+(i+1),position:C.Cartesian3.fromDegrees(4.5335+lonDelta,51.9261+latDelta,2),ellipse:{semiMajorAxis:3.5,semiMinorAxis:2.2,material:colors[type],outline:true,outlineColor:C.Color.WHITE},label:{text:(i+1)+' · '+type,font:'12px sans-serif',style:C.LabelStyle.FILL_AND_OUTLINE,outlineWidth:3,verticalOrigin:C.VerticalOrigin.BOTTOM,pixelOffset:new C.Cartesian2(0,-12),disableDepthTestDistance:Number.POSITIVE_INFINITY}});
+  }
+  state.textContent='3D Tiles-manifest verwerkt · zichtbare gebouwtiles worden geladen…';
+  tiles.tileLoad.addEventListener(()=>{state.textContent='Echte 3D Rotterdam-tiles ontvangen · bezetting blijft fictief';});
+  viewer.scene.renderError.addEventListener((_scene,error)=>{state.textContent='Renderfout: '+String(error?.message||error).slice(0,140);});
+ }catch(error){
+  state.textContent='3D Tiles laden mislukt: '+String(error?.message||error).slice(0,150)+'. De bestaande parkeersimulatie blijft beschikbaar.';
+ }
+})();
+</script></body></html>
