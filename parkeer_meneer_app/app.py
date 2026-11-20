@@ -256,23 +256,31 @@ def cityverse_rotterdam_3d():
 
 @app.get("/api/cityverse/tiles-check")
 def cityverse_tiles_check():
-    """Verify a specific 3D Tiles tileset URL discovered via the school OUP catalog."""
-    # Fixed allowlisted URL: no user-controlled fetch destination.
-    url="https://www.3dtilesnederland.nl/tiles/1.0/explicit/3DI_NLDT_Rotterdam/900/tileset.json"
-    try:
-        response=requests.get(url,headers={"Accept":"application/json"},timeout=12)
-        response.raise_for_status()
-        if len(response.content)>2000000:
-            raise ValueError("Tileset manifest te groot")
-        data=response.json()
-        if not isinstance(data,dict):
-            raise ValueError("Geen JSON-object")
-        asset=data.get("asset") or {}
-        root=data.get("root") or {}
-        valid=isinstance(asset,dict) and isinstance(root,dict) and bool(root)
-        return jsonify(status="verified" if valid else "invalid_manifest",source="Cityverse school catalog reference",url=url,tileset_version=str(asset.get("version",""))[:40] if isinstance(asset,dict) else "",root_present=bool(root),root_bounding_volume=bool(root.get("boundingVolume")) if isinstance(root,dict) else False,geometry_loaded_in_app=False)
-    except (requests.RequestException,ValueError,TypeError) as exc:
-        return jsonify(status="unavailable",source="Cityverse school catalog reference",url=url,error=str(exc)[:180],geometry_loaded_in_app=False),503
+    """Inspect official Rotterdam 3D Tiles manifests; no claim of rendered geometry."""
+    sources=[
+        ("Rotterdam 3D textured buildings LoD2 (municipality)",
+         "https://www.3drotterdam.nl/datasource-data/a6aee273-9406-41c4-a504-de2a59f7d514/tileset.json"),
+        ("3D Tiles Nederland Rotterdam BAG",
+         "https://3dtilesnederland.nl/tiles/1.0/implicit/nederland/599.json"),
+    ]
+    results=[]
+    for name,url in sources:
+        try:
+            response=requests.get(url,headers={"Accept":"application/json"},timeout=12)
+            response.raise_for_status()
+            if len(response.content)>2000000:raise ValueError("Manifest te groot")
+            data=response.json()
+            root=data.get("root") if isinstance(data,dict) else None
+            asset=data.get("asset") if isinstance(data,dict) else None
+            valid=isinstance(root,dict) and isinstance(asset,dict) and bool(root.get("boundingVolume"))
+            results.append({"source":name,"url":url,"status":"verified" if valid else "invalid_manifest",
+                            "tileset_version":str(asset.get("version",""))[:40] if isinstance(asset,dict) else "",
+                            "root_bounding_volume":bool(root.get("boundingVolume")) if isinstance(root,dict) else False})
+        except (requests.RequestException,ValueError,TypeError) as exc:
+            results.append({"source":name,"url":url,"status":"unavailable","error":str(exc)[:160]})
+    return jsonify(status="verified" if any(s["status"]=="verified" for s in results) else "unavailable",
+                   sources=results,school_catalog="OUP API connected separately; 3D geometry from official Rotterdam providers",
+                   geometry_loaded_in_app=False,viewer_path="/rotterdam-tiles-viewer.html")
 
 @app.get("/api/parking")
 def parking():
