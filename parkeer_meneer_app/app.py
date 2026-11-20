@@ -345,5 +345,84 @@ def nearby_garages():
             continue
     return jsonify(error="Kaartdienst tijdelijk niet bereikbaar",elements=[]),503
 
+
+# School-provided BGT/PDOK source: actual road-area features, NEVER live parking sensors.
+# Link to source metadata: https://api.pdok.nl/kadaster/bgt/ogc/v1/collections/wegdeel
+_BGT_ITEMS="https://api.pdok.nl/kadaster/bgt/ogc/v1/collections/wegdeel/items"
+_bgt_cache={}
+_bgt_lock=threading.Lock()
+
+@app.get("/api/school/bgt")
+def school_bgt():
+    """Read and summarize actual BGT road polygons near a selected Rotterdam street."""
+    try:
+        lat=float(request.args.get("lat",""))
+        lon=float(request.args.get("lon",""))
+        if not (51.80 <= lat <= 52.05 and 4.20 <= lon <= 4.70):
+            return jsonify(error="Kies een locatie binnen Rotterdam"),400
+    except (TypeError, ValueError):
+        return jsonify(error="Ongeldige coördinaten"),400
+    # Small bbox limits work and response size; numbers represent WGS84 longitude/latitude.
+    box=[round(lon-.0015,6),round(lat-.0010,6),round(lon+.0015,6),round(lat+.0010,6)]
+    key=(round(lat,4),round(lon,4))
+    now=time.monotonic()
+    with _bgt_lock:
+        entry=_bgt_cache.get(key)
+        if entry and entry["expires"]>now:
+            return jsonify(entry["payload"])
+    source="PDOK BGT OGC API Features / wegdeel"
+    try:
+        response=requests.get(_BGT_ITEMS,params={
+            "bbox":",".join(str(v) for v in box),"limit":150,"f":"json"
+        },headers={"Accept":"application/geo+json","User-Agent":"ParkeerMeneer-Educational-Prototype/1.0"},timeout=14)
+        response.raise_for_status()
+        if len(response.content)>6500000:
+            raise ValueError("BGT-antwoord te groot")
+        data=response.json()
+        if not isinstance(data,dict) or not isinstance(data.get("features"),list):
+            raise ValueError("Geen GeoJSON FeatureCollection ontvangen")
+        features=[]
+        sample_count=0
+        parking_surfaces=0
+        for item in data["features"][:150]:
+            if not isinstance(item,dict):
+                continue
+            geo=item.get("geometry") or {}
+            if geo.get("type") not in ("Polygon","MultiPolygon") or not geo.get("coordinates"):
+                continue
+            props=item.get("properties") or {}
+            if not isinstance(props,dict):
+                props={}
+            sample_count+=1
+            # 'parkeervlak' is a BGT Wegdeel function, not an available parking bay.
+            function=next((str(value) for field,value in props.items()
+                          if ("functie" in field.lower() or "function" in field.lower())
+                          and isinstance(value,str)), "Onbekend")
+            if "parkeer" in function.lower():
+                parking_surfaces+=1
+            if len(features)<65:
+                features.append({"type":"Feature","id":str(item.get("id",""))[:120],
+                                 "properties":{"functie":function[:100]},
+                                 "geometry":geo})
+        payload={"status":"connected","source":source,
+                 "source_url":_BGT_ITEMS,"type":"official_geographic_road_areas",
+                 "location":{"lat":lat,"lon":lon},"bbox":box,
+                 "sample_count":sample_count,"parking_surface_count":parking_surfaces,
+                 "sample_limited":True,"features":{"type":"FeatureCollection","features":features},
+                 "occupancy":"synthetic_not_from_bgt",
+                 "note":"BGT-wegdelen zijn echt; de gekleurde parkeerbezetting is een afzonderlijke simulatie."}
+        ttl=900
+    except (requests.RequestException,ValueError,TypeError) as exc:
+        payload={"status":"unavailable","source":source,"source_url":_BGT_ITEMS,
+                 "type":"official_geographic_road_areas","sample_count":0,
+                 "parking_surface_count":0,"features":{"type":"FeatureCollection","features":[]},
+                 "occupancy":"synthetic_not_from_bgt","error":str(exc)[:180]}
+        ttl=90
+    with _bgt_lock:
+        _bgt_cache[key]={"expires":now+ttl,"payload":payload}
+        if len(_bgt_cache)>30:
+            _bgt_cache.clear()
+    return jsonify(payload)
+
 if __name__=="__main__":
     app.run(host="0.0.0.0",port=5000,debug=False)
