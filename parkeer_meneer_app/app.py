@@ -217,6 +217,43 @@ def cityverse_catalog():
         _cityverse_cache.update(expires=time.monotonic()+300,payload=payload)
     return jsonify(payload)
 
+@app.get("/api/cityverse/rotterdam-3d")
+def cityverse_rotterdam_3d():
+    """Inspect school-supplied OUP catalog for Rotterdam 3D resources; no geometry claims."""
+    endpoint="https://hub.clearly.app/api/datasets"
+    try:
+        response=requests.get(endpoint,params={"search":"3D Rotterdam"},headers={"Accept":"application/json"},timeout=12)
+        response.raise_for_status()
+        data=response.json()
+        if isinstance(data,list):
+            items=data
+        elif isinstance(data,dict):
+            items=next((data[k] for k in ("items","results","data") if isinstance(data.get(k),list)),[])
+        else:
+            items=[]
+        matches=[]
+        for item in items[:1000]:
+            if not isinstance(item,dict):continue
+            name=str(item.get("name") or item.get("title") or "")
+            if "rotterdam" not in name.lower() or "3d" not in name.lower():continue
+            # Return catalog references only, never claim URLs are validated 3D tiles.
+            references=[]
+            def scan(obj,depth=0):
+                if depth>3 or len(references)>=25:return
+                if isinstance(obj,dict):
+                    for k,v in obj.items():
+                        if isinstance(v,str) and v.startswith(("https://","http://")) and any(t in k.lower() for t in ("url","uri","href","endpoint","download")):
+                            references.append({"field":str(k)[:60],"url":v[:600]})
+                        elif isinstance(v,(dict,list)):scan(v,depth+1)
+                elif isinstance(obj,list):
+                    for v in obj[:30]:scan(v,depth+1)
+            scan(item)
+            matches.append({"name":name[:180],"id":str(item.get("id") or item.get("_id") or "")[:120],"references":references})
+            if len(matches)>=20:break
+        return jsonify(status="connected",source="School OUP / Clearly.Hub",query="3D Rotterdam",count_returned=len(items),matches=matches,geometry_loaded=False,notes="Catalog references only; 3D tile URLs still need validation")
+    except (requests.RequestException,ValueError,TypeError) as exc:
+        return jsonify(status="unavailable",source="School OUP / Clearly.Hub",error=str(exc)[:180],geometry_loaded=False),503
+
 @app.get("/api/parking")
 def parking():
     now=time.monotonic()
