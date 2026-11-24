@@ -362,10 +362,17 @@ function renderDatasetMap(){
    yes.addEventListener('click',()=>{eligibility.style.display='none';links.style.display='block';});
    no.addEventListener('click',()=>{warning.style.display='block';links.style.display='none';});
    eligibility.append(question,yes,no,warning);
-   button.addEventListener('click',()=>{if(accessible){eligibility.style.display='block';links.style.display='none';}else{links.style.display='block';}});
+   button.addEventListener('click',()=>{
+      if(accessible){eligibility.style.display='block';links.style.display='none';return;}
+      if(v.free===0)return;
+      layer.closePopup();
+      const scene=$('streetScene');
+      if(scene){scene.scrollIntoView({behavior:'smooth',block:'start'});scene.style.outline='3px solid #087968';scene.style.outlineOffset='4px';setTimeout(()=>{scene.style.outline='';scene.style.outlineOffset='';},2500);}
+      $('detail').textContent='Kies hieronder een groen parkeervak. Bevestig je keuze om verder te gaan naar navigatie (simulatie).';
+   });
    if(v.free===0&&!accessible){button.disabled=true;button.textContent='Geen vrije plaatsen (demo)';button.style.opacity='.6';}
    popup.append(title,desc,occupancyDetail,button,eligibility,links);
-   layer.bindPopup(popup);
+   layer.bindPopup(popup,{autoPan:true,autoPanPaddingTopLeft:[24,95],autoPanPaddingBottomRight:[24,30],maxWidth:310});
    layer.on('mouseover',()=>layer.setStyle({weight:7,color:'#111827',fillOpacity:1}));
    layer.on('mouseout',()=>datasetLayer&&datasetLayer.resetStyle(layer));
   }
