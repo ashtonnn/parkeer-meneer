@@ -301,7 +301,7 @@ function renderDatasetMap(){
  const displayFeatures=fallback?Array.from({length:6},(_,i)=>{
    // Linear illustrative layout instead of an artificial ring. NOT verified parking coordinates.
    const lat=chosen.lat+(i-2.5)*.00022,lon=chosen.lon+(i%2===0?-.00011:.00011);
-   return {type:'Feature',properties:{functie:'demo-zone'},geometry:{type:'Polygon',coordinates:[[[lon-.00009,lat-.000055],[lon+.00009,lat-.000055],[lon+.00009,lat+.000055],[lon-.00009,lat+.000055],[lon-.00009,lat-.000055]]]}};
+   return {type:'Feature',properties:{functie:'demo-zone'},geometry:{type:'Polygon',coordinates:[[[lon-.00019,lat-.000085],[lon+.00019,lat-.000085],[lon+.00019,lat+.000085],[lon-.00019,lat+.000085],[lon-.00019,lat-.000085]]]}};
  }):parking;
  const forecastHour=typeof hour==='number'?hour:12;
  const statuses=displayFeatures.map((f,i)=>{
@@ -311,7 +311,7 @@ function renderDatasetMap(){
    return {capacity,free:fallback&&i===3?0:capacity-occupancy};
  });
  datasetLayer=L.geoJSON({type:'FeatureCollection',features:displayFeatures},{
-  style:f=>{const i=displayFeatures.indexOf(f),v=statuses[i];return {color:'#172b3a',weight:4,fillColor:i%7===1?'#2563eb':v.free===0?'#dc2626':'#16a34a',fillOpacity:1};},
+  style:f=>{const i=displayFeatures.indexOf(f),v=statuses[i];return {color:'#ffffff',weight:1.5,opacity:.95,fillColor:i%7===1?'#1769ff':v.free===0?'#ff2525':'#00d64f',fillOpacity:.88};},
   onEachFeature:(f,layer)=>{
    const i=displayFeatures.indexOf(f),v=statuses[i];
    const center=layer.getBounds().getCenter(),dest=encodeURIComponent(fallback?chosen.lat+','+chosen.lon:center.lat+','+center.lng);
@@ -335,11 +335,18 @@ function renderDatasetMap(){
    if(v.free===0&&!accessible){button.disabled=true;button.textContent='Geen vrije plaatsen (demo)';button.style.opacity='.6';}
    popup.append(title,desc,button,eligibility,links);
    layer.bindPopup(popup);
-   layer.on('mouseover',()=>layer.setStyle({weight:6,color:'#0f172a'}));
+   layer.on('mouseover',()=>layer.setStyle({weight:3,color:'#1e293b'}));
    layer.on('mouseout',()=>datasetLayer&&datasetLayer.resetStyle(layer));
   }
  }).addTo(datasetMap);
- displayFeatures.forEach((f,i)=>{const v=statuses[i];const geom=L.geoJSON(f);const center=geom.getBounds().getCenter();const color=i%7===1?'#2563eb':v.free===0?'#dc2626':'#16a34a';const dot=L.circleMarker(center,{radius:6,color:'#fff',weight:3,fillColor:color,fillOpacity:1}).addTo(datasetLayer);dot.bindTooltip((i%7===1?'♿ Demo · ':v.free===0?'Bezet · ':'')+v.free+' vrij',{permanent:true,direction:'top',offset:[0,-7],className:'parking-count-label'});dot.on('click',()=>{const shape=datasetLayer.getLayers().find(l=>l.feature===f);if(shape)shape.openPopup(center);});});
+ displayFeatures.forEach((f,i)=>{
+   const v=statuses[i],geom=L.geoJSON(f),center=geom.getBounds().getCenter();
+   const label=i%7===1?'♿':v.free===0?'VOL':v.free+' vrij';
+   const shape=datasetLayer.getLayers().find(l=>l.feature===f);
+   if(shape){
+     shape.bindTooltip(label,{permanent:true,direction:i%2===0?'top':'bottom',offset:[0,i%2===0?-10:10],className:'parking-count-label',opacity:.96});
+   }
+ });
  $('datasetMapStatus').textContent=fallback?'Geen BGT-parkeervlakken gevonden. De zes markeringen liggen ter illustratie langs de gekozen straat: geen echte parkeerlocaties. Groen = vrij, rood = bezet, blauw = toegankelijk (allemaal demo).':'BGT-parkeergebieden met gesimuleerde bezetting (geen live meting). Tik op een gekleurd gebied.';
  setTimeout(()=>datasetMap.invalidateSize(),150);
 }
