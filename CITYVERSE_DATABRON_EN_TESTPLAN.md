@@ -1,44 +1,54 @@
-# Cityverse – verwerking schooldatabron en testplan
+# Cityverse / Parkeer Meneer — schooleisen, databronnen en toetsbare acceptatie
 
-## Wat is gebouwd
-Parkeer Meneer gebruikt de **BGT / PDOK**-bron uit de vier besproken schooldatabronnen voor geografische informatie, naast de bestaande **synthetische IoT-parkeerbezetting**. De oorspronkelijke parkeerweergave is de standaard. De experimentele 3D-viewer is uit de hoofdroute verwijderd; de aparte technische bestanden blijven voorlopig alleen voor eventueel vervolgonderzoek bestaan.
+**Basis:** Plan van Aanpak Cityverse groep 1B (pagina 3–6), cursuswijzer DD&AIS 2026–2027 v1.1 (hoofdstuk 4), docentfeedback: **een werkend prototype, desnoods met dummydata; alleen een klein dashboard is onvoldoende**. Exacte rubric en uploadinstructies staan op Brightspace en zijn nog niet bevestigd.
 
-### Werkelijke dataset
-- Dataset: **Basisregistratie Grootschalige Topografie (BGT)**, collectie **wegdeel**, via PDOK OGC API Features.
-- Officiële collectiebeschrijving: https://api.pdok.nl/kadaster/bgt/ogc/v1/collections/wegdeel
-- Werkelijk bevragingsadres: https://api.pdok.nl/kadaster/bgt/ogc/v1/collections/wegdeel/items
-- App-endpoint: `GET /api/school/bgt?lat=51.9228&lon=4.4852` (voorbeeld Meent, Rotterdam).
-- Een kleine bounding box rond de gekozen straat wordt gebruikt, met maximaal 150 opgehaalde features en maximaal 65 polygonen voor weergave.
-- De app telt ontvangen wegdelen en objecten waarvan een functieveld 'parkeer' bevat. Een geografisch **parkeervlak is niet gelijk aan één gemeten parkeerplek**.
-- Op de Rotterdamkaart zijn deze wegdelen als paarse contouren te tonen. Geografie is **echt**; vrij/bezet-status, tijdmachine en parkeeraanbeveling zijn **simulaties**.
-- De BGT-koppeling is *geen* bewijs van live IoT-parkeersensoren of van gegarandeerde parkeerbeschikbaarheid.
+## Eisen uit het Plan van Aanpak → concrete uitvoering en bewijs
 
-### Technische foutafhandeling
-Als de PDOK-dienst tijdelijk niet bereikbaar is, geeft het server-endpoint `status: unavailable`. De app laat de bronstatus zien en houdt de synthetische parkeersimulatie bruikbaar. Het gehoste endpoint moet op Render worden getest; een codecommit is geen bevestiging dat de verbinding in productie werkt.
+| PvA-eis | Uitvoering in Parkeer Meneer | Status / nog nodig |
+| --- | --- | --- |
+| IoT-sensorconcept, beoogde gebruiker, vrij/bezet | Gesimuleerde sensoren per voorbeeldstraat, interactieve kaart en tijdregeling | Gebouwd; scenario en gebruikerstest documenteren |
+| Beschikbare Cityverse-data inspecteren, herkomst en kwaliteit | Gemeentelijke Rotterdam WFS Parkeervoorzieningen via `/api/parking`; BGT/PDOK via `/api/school/bgt` | API-code aanwezig; aantallen, response en actualiteit op Render nog vastleggen |
+| Data verzamelen, combineren en verwerken | Echte locaties als afzonderlijke kaartpunten; synthetische sensorstatus afzonderlijk | Scheiding behouden; niet beweren dat de echte locaties echte bezetting tonen |
+| Werkend prototype, niet alleen dashboard | Straatkeuze, kaartinteractie, tijdslider, afspelen, vrij/bezet, CSV-export | Gebouwd; volledige browser-/Render-eindtest nog open |
+| Minimaal één relevante data-analyse of AI-component | Bezettingspercentages, 60-minuten-scenariovoorspelling, backtest versus baseline | Aanwezig; **regelgebaseerd, geen getrainde AI**; methodiek en resultaten vastleggen |
+| Testen, feedback, conclusies, beperkingen, advies | Regressietest `parkeer_meneer_app/tests/simulation.test.cjs`, CI, documentatie | Automatische test eerder geslaagd; echte eindtest, screenshots, feedback en conclusies nog open |
+| Actueel PvA, Scrum-board, teamreview (Definition of Done) | Buiten de publieke app: schoolportfolio / Scrum-board | Apart opleveren; teamlid moet resultaat reviewen |
+| Datakwaliteit, privacy, reproduceerbaarheid | Publieke objectlocaties zonder persoonsgegevens; synthetische meetwaarden herkenbaar | Datakwaliteit/API-fallback en testscenario's documenteren |
 
-## Functionele acceptatiechecks
-1. Deploy de nieuwste commit van de `main`-branch naar Render.
-2. Open de Parkeer Meneer-site, log in en kies **Meent**. De bestaande parkeersimulatie moet zichtbaar zijn; geen geforceerde 3D-viewer.
-3. Scroll naar **Geografische data uit Rotterdam**. Bij de BGT-sectie verschijnen na een geslaagde aanvraag echte aantallen bij *Wegdelen* en *functie parkeervlak*; bij verbindingsfouten verschijnt een eerlijke melding.
-4. Open `/api/school/bgt?lat=51.9228&lon=4.4852`. Controleer `status`, `source_url`, `sample_count`, `features` en `occupancy`. Alleen bij `status: connected` én een niet-lege `features.features` kan worden aangetoond dat echte geografische features zijn verwerkt.
-5. Ga terug naar de Rotterdamkaart. Het vinkje **Toon BGT-wegdelen** moet echte geografische contouren aan/uit zetten.
-6. Gebruik de tijdslider en de knop *Speel af*. Controleer of vrij/bezet-aantallen en de grafiek logisch veranderen (deze uitkomsten zijn synthetisch).
-7. Klik een groen vak aan en test de waarschuwing dat een echte parkeerplek niet gegarandeerd is. Controleer dat er géén 3D-knop meer in de hoofdroute staat.
-8. Test de fallback als de BGT-dienst geen data geeft; de app mag niet vastlopen.\n9. Controleer de 60-minuten-voorspelling, backtest tegen nulmeting en de CSV-export met 2304 fictieve registraties (24 vakken × 96 kwartieren).\n10. Voer `node parkeer_meneer_app/tests/simulation.test.cjs` uit in de repo-root. Dit is een offline regressiecontrole; test ook handmatig op Render.
+**Belangrijke scope:** het PvA staat gemarkeerde dummydata toe als echte sensordata ontbreekt. Een geografisch parkeervlak, parkeerautomaat of parkeerterrein is niet gelijk aan een gemeten vrij parkeervak. De kaart mag geen live beschikbaarheid of gegarandeerde plek suggereren.
 
-## Bewijs voor school
-Documenteer per test: gekozen straat, datum/tijd, screenshot van de app, API-status, aantal werkelijk ontvangen BGT-objecten, screenshot van de simulatie, een bevinding en eventueel een verbeteractie.
+## Relevantie van aangeleverde datasets
 
-Het Plan van Aanpak van groep 1B noemt een werkend proof-of-concept/dashboard, inzicht in vrij en bezet, vastgelegde databronnen, minimaal één parkeeranalyse, testresultaten, beperkingen en een advies als beoogde opleveringen. De bezettingspercentages per tijdstip zijn *beschrijvende analyse van synthetische gegevens*. Daarnaast is een uitlegbaar **60-minuten-scenariovoorspelmodel** en een terugtest toegevoegd. Er is **geen getraind voorspellend AI-model**. Het model combineert 50% huidige gesimuleerde bezetting met 50% vooraf ingesteld drukteprofiel; de backtest gebruikt 89 fictieve tijdstippen.
+1. **Rotterdam Beheer Openbare Ruimte 2D:** WFS-verwijzing `https://diensten.rotterdam.nl/arcgis/services/SB_Infra/Parkeervoorzieningen/MapServer/WFSServer`; ook Parkeerautomaat. **Meest relevant voor echte locatieobjecten**. De JSON-LD is catalogusmetadata; succesvolle live objectdownload moet afzonderlijk worden bewezen.
+2. **BGT/PDOK:** `https://api.pdok.nl/kadaster/bgt/ogc/v1/collections/wegdeel/items`. Bruikbaar als achtergrondgeografie, **niet als live sensordata**. De technische BGT-sectie en kaartschakelaars zijn bewust uit de gebruikersinterface verwijderd; de API blijft bestaan.
+3. **Rotterdam 3D publieke ruimte:** optioneel voor vervolgonderzoek; niet nodig voor het parkeerprototype.
+4. **Rotterdam 3D schaduwanalyse:** niet relevant voor huidige hoofdvraag; niet kunstmatig toevoegen.
 
-## Bronnen en transparantie
-- School: *DDAIS PvA voor Cityverse* (groep 1B).
-- School: *IoT en API data Brian 20260921*, met de OUP-catalogusreferenties (`hub.clearly.app`).
-- Databron voor deze uitbreiding: **PDOK / Kadaster BGT OGC API Features**, collectie wegdeel.
-- Aanvullend: Rotterdamse WFS *Parkeervoorzieningen* is als best-effort bron afzonderlijk beschikbaar, geen sensormeting.
+## Actuele acceptatietests (uit te voeren op gedeployde versie)
 
-**Nog niet bewezen zonder een Render-test:** of de nieuwste serverversie de PDOK-objecten onder de netwerkcondities van Render kan laden en of alle browserbediening correct werkt.
+- [ ] Render toont de laatste GitHub-commit; leg URL, commit-ID en tijdstip vast.
+- [ ] Open de site, log in en kies Meent; de kaart en parkeerstatus laden zonder fout.
+- [ ] Wissel tussen de vijf voorbeeldstraten en controleer de bijbehorende simulatie.
+- [ ] Verplaats de tijdslider en speel de simulatie af; vrij/bezet en grafiek veranderen consistent.
+- [ ] Selecteer een vrij voorbeeldvak; de app waarschuwt dat dit geen gegarandeerde echte plek is.
+- [ ] Test `/api/parking`: bewaar HTTP-status, `mode`, objectaantal, voorbeeldrecord en bronvermelding. Alleen bij echte ontvangen objecten mag dit als geslaagde live data-integratie worden geclaimd.
+- [ ] Test `/api/school/bgt?lat=51.9228&lon=4.4852`: bewaar status, sample_count en ontvangen GeoJSON; deze laag hoeft **niet zichtbaar** te zijn in de gebruikersinterface.
+- [ ] Simuleer onbereikbare externe API: de parkeerapp blijft bruikbaar en toont geen verzonnen live-data-status.
+- [ ] Controleer CSV-export (24 vakken × 96 kwartieren = 2304 synthetische records per straat) en markering van herkomst.
+- [ ] Controleer 60-minutenvoorspelling, terugtest en transparante uitleg dat het model regelgebaseerd is.
+- [ ] Voer automatische tests opnieuw uit op de eindcommit en noteer de CI-run.
+- [ ] Leg minimaal één review door een teamlid, feedback en een eventuele verbeteractie vast.
 
+**Bewijsformat per test:** test-ID, schooleis, datum/tijd, versie/commit, teststappen, verwacht resultaat, werkelijk resultaat, screenshot of response, geslaagd/mislukt, verantwoordelijke.
 
-## Afronding
-Zie `CITYVERSE_OPLEVERPLAN.md` voor PvA-mapping, nog openstaande browser-/opdrachtgevertests en conclusies. GitHub-code is geen bevestiging dat de externe BGT-service op Render werkt.
+## AI Symposium en schooloplevering
+
+- **11 december 2026:** werkend prototype demonstreren in workshop/playground op AI Symposium.
+- **13 december 2026:** AI Symposium-bewijs voor portfolio.
+- **20 december 2026:** individuele AI Symposium-reflectie.
+- Als onderbouwing volgens het PvA: actueel PvA en Scrum-board; IoT-concept en doelgroep; broninventarisatie en dataverwerking; werkende app; analyse/AI-component; testresultaten, conclusies, beperkingen en doorontwikkeladvies.
+- **Let op:** de precieze beoordelingsrubric en verplichte uploadbestanden staan volgens de cursuswijzer op Brightspace. Niet doen alsof deze al gecontroleerd zijn.
+
+## Status en open risico's
+
+Deze checklist is documentatie en **geen bewijs van een uitgevoerde Render-test**. De laatst bekende geslaagde GitHub-CI-run bevestigt alleen de automatische checks, niet de browser of externe services. In het bijzonder zijn echte Rotterdamse objectaantallen, servicebeschikbaarheid en screenshots nog niet gevalideerd. Voeg geen verzonnen testresultaten toe.
