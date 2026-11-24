@@ -208,30 +208,11 @@ async function resolveStreet(q){const e=examples.find(s=>s.name.toLowerCase()===
 async function highlightStreet(street){
  if(!map||!window.L)return;
  if(streetHighlight){map.removeLayer(streetHighlight);streetHighlight=null}
- const label='Geselecteerde omgeving: '+street.name+' (visuele indicatie, geen officiële wijkgrens)';
- const makeApprox=()=>{
-   const lat=street.lat,lon=street.lon;
-   const coords=[[lat-.00065,lon-.00105],[lat-.00065,lon+.00105],[lat+.00065,lon+.00105],[lat+.00065,lon-.00105]];
-   streetHighlight=L.polygon(coords,{color:'#086fbd',weight:3,fillColor:'#3b82f6',fillOpacity:.25,dashArray:'7 5'}).addTo(map).bindPopup(label);
-   map.fitBounds(streetHighlight.getBounds().pad(.45),{maxZoom:16});
- };
- try{
-   const url='https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&limit=5&q='+encodeURIComponent(street.name+', Rotterdam, Nederland');
-   const r=await fetch(url);if(!r.ok){makeApprox();return}
-   const list=await r.json();const item=list.find(x=>x.geojson&&x.display_name.toLowerCase().includes('rotterdam'));
-   if(!item){makeApprox();return}
-   const type=item.geojson.type;
-   if(type==='Polygon'||type==='MultiPolygon'){
-     streetHighlight=L.geoJSON(item.geojson,{style:{color:'#086fbd',weight:3,fillColor:'#3b82f6',fillOpacity:.25}}).addTo(map).bindPopup(label);
-   }else if(type==='LineString'||type==='MultiLineString'){
-     // Highlight a broad corridor around the selected street, not a tiny dotted line.
-     const corridor=L.geoJSON(item.geojson,{style:{color:'#3b82f6',weight:34,opacity:.32,lineCap:'round'}});
-     const centerline=L.geoJSON(item.geojson,{style:{color:'#086fbd',weight:3,opacity:.85}});
-     streetHighlight=L.layerGroup([corridor,centerline]).addTo(map);
-     streetHighlight.getBounds=()=>corridor.getBounds();
-   }else{makeApprox();return}
-   map.fitBounds(streetHighlight.getBounds().pad(.35),{maxZoom:16});
- }catch(e){makeApprox()}
+ const radiusMeters=1500;
+ streetHighlight=L.circle([street.lat,street.lon],{radius:radiusMeters,color:'#075cb4',weight:4,fillColor:'#3b82f6',fillOpacity:.16,interactive:true}).addTo(map);
+ streetHighlight.bindPopup('Zoekgebied: 1,5 km rondom '+street.name+'. Dit is een zoekradius, geen officiële wijkgrens.');
+ map.fitBounds(streetHighlight.getBounds().pad(.12),{maxZoom:15});
+ $('previewStatus').textContent='Zoekgebied van 1,5 km rondom '+street.name+' geselecteerd. Dit is een indicatieve straal, geen officiële wijkgrens.';
 }
 async function previewStreet(q){q=q.trim();if(!q)return;$('previewStatus').textContent='Straat zoeken: '+q+'…';if(!map)initMap();const s=await resolveStreet(q);if(!s){$('previewStatus').textContent='Straat niet gevonden. Probeer een andere straat in Rotterdam.';return}preview=s;$('query').value=s.name;$('mapContinue').disabled=false;$('mapSelectionLabel').textContent='📍 '+s.name+', Rotterdam';const mapTarget=$('map');if(mapTarget){mapTarget.scrollIntoView({behavior:'smooth',block:'center'});}$('previewStatus').textContent='📍 '+s.name+', Rotterdam geselecteerd. Klik op Verder naar parkeerplaatsen om de simulatie te bekijken.';if(map){map.invalidateSize(true);map.flyTo([s.lat,s.lon],17,{duration:1.3});if(!marker)marker=L.marker([s.lat,s.lon]).addTo(map);marker.setLatLng([s.lat,s.lon]);marker.bindPopup('<b>📍 '+s.name.replace(/[<>&]/g,'')+'</b><br>Geselecteerde straat').openPopup();highlightStreet(s)}}async function search(q){q=(q||'').trim();if(!q)q=(preview&&preview.name)||(chosen&&chosen.name)||'Weena';$('geoStatus').textContent='Straat zoeken…';const s=await resolveStreet(q);if(!s){$('geoStatus').textContent='Straat niet gevonden of zoekservice niet bereikbaar. Probeer Weena, Coolsingel of Meent.';return}chosen=s;preview=s;seed=hash(s.name);selected=null;hour=12;minute=0;$('timeSlider').value=48;stopPlay();if(map){map.flyTo([s.lat,s.lon],17,{duration:1.1});marker.setLatLng([s.lat,s.lon])}$('geoStatus').textContent='Gevonden: '+s.name;startTransition()}
 function startTransition(){const o=$('transition');o.className='overlay active';o.setAttribute('aria-hidden','false');setTimeout(()=>o.classList.add('zoom'),2050);setTimeout(()=>{showStreet();o.className='overlay';o.setAttribute('aria-hidden','true')},3250)}
@@ -338,7 +319,7 @@ function renderDatasetMap(){
    return {capacity,free:fallback&&i===3?0:capacity-occupancy};
  });
  datasetLayer=L.geoJSON({type:'FeatureCollection',features:displayFeatures},{
-  style:f=>{const i=displayFeatures.indexOf(f),v=statuses[i];return {color:'#ffffff',weight:1.5,opacity:.95,fillColor:i%7===1?'#1769ff':v.free===0?'#ff2525':'#00d64f',fillOpacity:.88};},
+  style:f=>{const i=displayFeatures.indexOf(f),v=statuses[i];return {color:i%7===1?'#0644cc':v.free===0?'#b00000':'#00852d',weight:5,opacity:1,fillColor:i%7===1?'#1769ff':v.free===0?'#ff2525':'#00d64f',fillOpacity:.94};},
   onEachFeature:(f,layer)=>{
    const i=displayFeatures.indexOf(f),v=statuses[i];
    const center=layer.getBounds().getCenter(),dest=encodeURIComponent(fallback?chosen.lat+','+chosen.lon:center.lat+','+center.lng);
@@ -362,7 +343,7 @@ function renderDatasetMap(){
    if(v.free===0&&!accessible){button.disabled=true;button.textContent='Geen vrije plaatsen (demo)';button.style.opacity='.6';}
    popup.append(title,desc,button,eligibility,links);
    layer.bindPopup(popup);
-   layer.on('mouseover',()=>layer.setStyle({weight:3,color:'#1e293b'}));
+   layer.on('mouseover',()=>layer.setStyle({weight:7,color:'#111827',fillOpacity:1}));
    layer.on('mouseout',()=>datasetLayer&&datasetLayer.resetStyle(layer));
   }
  }).addTo(datasetMap);
