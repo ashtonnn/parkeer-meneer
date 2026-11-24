@@ -205,7 +205,34 @@ function exportSimulation(){
 function chips(){const root=$('chips');root.innerHTML='';examples.forEach(s=>{const b=document.createElement('button');b.className='chip';b.textContent=s.name;b.onclick=()=>{$('query').value=s.name;safePreview(s.name)};root.append(b)})}
 function initMap(){if(map){setTimeout(()=>map.invalidateSize(true),100);return}if(!window.L){$('fallback').style.display='flex';return}try{map=L.map('map').setView([51.922,4.478],14);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);marker=L.marker([chosen.lat,chosen.lon],{icon:L.divIcon({html:'<div class="pin">📍</div>',className:'',iconSize:[42,52],iconAnchor:[21,48]})}).addTo(map).bindPopup('<b>📍 Weena</b><br>Geselecteerde straat');refreshRealLayer()}catch(e){$('fallback').style.display='flex'}}
 async function resolveStreet(q){const e=examples.find(s=>s.name.toLowerCase()===q.toLowerCase());if(e)return {...e};const c=new AbortController(),t=setTimeout(()=>c.abort(),6500);try{const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=5&q='+encodeURIComponent(q+', Rotterdam, Nederland'),{signal:c.signal});if(!r.ok)throw Error();const a=await r.json();const x=a.find(x=>x.display_name.toLowerCase().includes('rotterdam'));return x?{name:q,lat:+x.lat,lon:+x.lon}:null}catch(e){return null}finally{clearTimeout(t)}}
-async function highlightStreet(street){if(!map||!window.L)return;if(streetHighlight){map.removeLayer(streetHighlight);streetHighlight=null}try{const url='https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&limit=5&q='+encodeURIComponent(street.name+', Rotterdam, Nederland');const r=await fetch(url);if(!r.ok)return;const list=await r.json();const item=list.find(x=>x.geojson&&/LineString|MultiLineString/.test(x.geojson.type)&&x.display_name.toLowerCase().includes('rotterdam'));if(!item)return;streetHighlight=L.geoJSON(item.geojson,{style:{color:'#d62828',weight:7,opacity:1,dashArray:'1, 15',dashOffset:'0',lineCap:'round',lineJoin:'round'}}).addTo(map);streetHighlight.bindPopup('Geselecteerde straat: '+street.name);map.fitBounds(streetHighlight.getBounds().pad(.35),{maxZoom:17})}catch(e){/* pin remains as fallback */}}
+async function highlightStreet(street){
+ if(!map||!window.L)return;
+ if(streetHighlight){map.removeLayer(streetHighlight);streetHighlight=null}
+ const label='Geselecteerde omgeving: '+street.name+' (visuele indicatie, geen officiële wijkgrens)';
+ const makeApprox=()=>{
+   const lat=street.lat,lon=street.lon;
+   const coords=[[lat-.00065,lon-.00105],[lat-.00065,lon+.00105],[lat+.00065,lon+.00105],[lat+.00065,lon-.00105]];
+   streetHighlight=L.polygon(coords,{color:'#086fbd',weight:3,fillColor:'#3b82f6',fillOpacity:.25,dashArray:'7 5'}).addTo(map).bindPopup(label);
+   map.fitBounds(streetHighlight.getBounds().pad(.45),{maxZoom:16});
+ };
+ try{
+   const url='https://nominatim.openstreetmap.org/search?format=json&polygon_geojson=1&limit=5&q='+encodeURIComponent(street.name+', Rotterdam, Nederland');
+   const r=await fetch(url);if(!r.ok){makeApprox();return}
+   const list=await r.json();const item=list.find(x=>x.geojson&&x.display_name.toLowerCase().includes('rotterdam'));
+   if(!item){makeApprox();return}
+   const type=item.geojson.type;
+   if(type==='Polygon'||type==='MultiPolygon'){
+     streetHighlight=L.geoJSON(item.geojson,{style:{color:'#086fbd',weight:3,fillColor:'#3b82f6',fillOpacity:.25}}).addTo(map).bindPopup(label);
+   }else if(type==='LineString'||type==='MultiLineString'){
+     // Highlight a broad corridor around the selected street, not a tiny dotted line.
+     const corridor=L.geoJSON(item.geojson,{style:{color:'#3b82f6',weight:34,opacity:.32,lineCap:'round'}});
+     const centerline=L.geoJSON(item.geojson,{style:{color:'#086fbd',weight:3,opacity:.85}});
+     streetHighlight=L.layerGroup([corridor,centerline]).addTo(map);
+     streetHighlight.getBounds=()=>corridor.getBounds();
+   }else{makeApprox();return}
+   map.fitBounds(streetHighlight.getBounds().pad(.35),{maxZoom:16});
+ }catch(e){makeApprox()}
+}
 async function previewStreet(q){q=q.trim();if(!q)return;$('previewStatus').textContent='Straat zoeken: '+q+'…';if(!map)initMap();const s=await resolveStreet(q);if(!s){$('previewStatus').textContent='Straat niet gevonden. Probeer een andere straat in Rotterdam.';return}preview=s;$('query').value=s.name;$('mapContinue').disabled=false;$('mapSelectionLabel').textContent='📍 '+s.name+', Rotterdam';const mapTarget=$('map');if(mapTarget){mapTarget.scrollIntoView({behavior:'smooth',block:'center'});}$('previewStatus').textContent='📍 '+s.name+', Rotterdam geselecteerd. Klik op Verder naar parkeerplaatsen om de simulatie te bekijken.';if(map){map.invalidateSize(true);map.flyTo([s.lat,s.lon],17,{duration:1.3});if(!marker)marker=L.marker([s.lat,s.lon]).addTo(map);marker.setLatLng([s.lat,s.lon]);marker.bindPopup('<b>📍 '+s.name.replace(/[<>&]/g,'')+'</b><br>Geselecteerde straat').openPopup();highlightStreet(s)}}async function search(q){q=(q||'').trim();if(!q)q=(preview&&preview.name)||(chosen&&chosen.name)||'Weena';$('geoStatus').textContent='Straat zoeken…';const s=await resolveStreet(q);if(!s){$('geoStatus').textContent='Straat niet gevonden of zoekservice niet bereikbaar. Probeer Weena, Coolsingel of Meent.';return}chosen=s;preview=s;seed=hash(s.name);selected=null;hour=12;minute=0;$('timeSlider').value=48;stopPlay();if(map){map.flyTo([s.lat,s.lon],17,{duration:1.1});marker.setLatLng([s.lat,s.lon])}$('geoStatus').textContent='Gevonden: '+s.name;startTransition()}
 function startTransition(){const o=$('transition');o.className='overlay active';o.setAttribute('aria-hidden','false');setTimeout(()=>o.classList.add('zoom'),2050);setTimeout(()=>{showStreet();o.className='overlay';o.setAttribute('aria-hidden','true')},3250)}
 
