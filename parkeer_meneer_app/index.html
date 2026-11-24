@@ -306,7 +306,7 @@ if(datasetMap&&chosen)renderDatasetMap();const chart=$('chart');chart.innerHTML=
 if(selected){const b=items[selected-1];$('detail').textContent='Vak '+selected+': '+(b.accessible?'illustratief toegankelijk':b.occupied?'bezet':'vrij')+' om '+String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+' (synthetische sensor).'}else $('detail').textContent='Selecteer een parkeervak om de status te bekijken.'}
 function chooseBay(b,confirmedOutside=false){const outsideZone=activeZoneIndex!==null&&activeZoneCount>0&&((b.id-1)%activeZoneCount!==activeZoneIndex);if(outsideZone&&!b.occupied&&!b.accessible&&!confirmedOutside){$('outsideZoneText').textContent='Parkeervak '+b.id+' ligt buiten het parkeergebied dat je hebt geselecteerd. Dit vak is beschikbaar. Wil je hier toch parkeren?';$('outsideZoneOverlay').classList.add('active');$('outsideZoneYes').onclick=()=>{$('outsideZoneOverlay').classList.remove('active');chooseBay(b,true)};$('outsideZoneNo').onclick=()=>{$('outsideZoneOverlay').classList.remove('active')};$('outsideZoneNo').focus();return;}selected=b.id;$('navigation').classList.add('hidden');render();if(b.occupied||b.accessible){$('detail').textContent='Vak '+b.id+' is '+(b.accessible?'illustratief toegankelijk':'bezet')+'. Kies een groen vak.';return}$('confirmText').textContent=chosen.name+' · vak '+b.id+' · '+$('timeLabel').textContent+' (simulatie)';$('confirmOverlay').classList.add('active');$('confirmYes').focus()}
 $('confirmNo').onclick=()=>{$('confirmOverlay').classList.remove('active');selected=null;render()};
-$('confirmYes').onclick=()=>{const id=selected,at=$('timeLabel').textContent,street=chosen.name;if(!id)return;$('confirmOverlay').classList.remove('active');const car=$('drivecar');car.classList.remove('go');void car.offsetWidth;car.classList.add('go');$('detail').textContent='🚗 Auto rijdt naar vak '+id+'…';setTimeout(()=>{if(selected!==id)return;$('routeTitle').textContent=street+' · Vak '+id;$('routeTime').textContent='Gesimuleerd vrij om '+at;$('routeDate').textContent='Datum: '+new Intl.DateTimeFormat('nl-NL',{dateStyle:'full',timeZone:'Europe/Amsterdam'}).format(new Date())+' · Simulatietijd: '+at;$('routeGoogle').href=$('google').href;$('routeWaze').href=$('waze').href;$('routeApple').href=$('apple').href;$('streetScreen').classList.add('hidden');$('routeScreen').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})},1500)};
+$('confirmYes').onclick=()=>{const id=selected,at=$('timeLabel').textContent,street=chosen.name;if(!id)return;$('confirmOverlay').classList.remove('active');const car=$('drivecar');car.classList.remove('go');void car.offsetWidth;car.classList.add('go');$('detail').textContent='🚗 Auto rijdt naar vak '+id+'…';setTimeout(()=>{if(selected!==id)return;$('routeTitle').textContent=street+' · Vak '+id;$('routeTime').textContent='Gesimuleerd vrij om '+at;$('routeDate').textContent='Datum: '+new Intl.DateTimeFormat('nl-NL',{dateStyle:'full',timeZone:'Europe/Amsterdam'}).format(new Date())+' · Simulatietijd: '+at;const destination=zoneDestinationForBay(id);if(destination){setParkingNavigationLinks(destination);}else{$('routeGoogle').href=$('google').href;$('routeWaze').href=$('waze').href;$('routeApple').href=$('apple').href;}$('streetScreen').classList.add('hidden');$('routeScreen').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})},1500)};
 
 const explanations={free:'Vrije vakken = het aantal gewone vakken waarvoor de synthetische sensor vrij aangeeft. Toegankelijke vakken tellen apart.',taken:'Bezette vakken = het aantal gewone vakken waarvoor de synthetische sensor bezet aangeeft.',accessible:'Toegankelijke vakken zijn illustratieve blauwe vakken. De dataset bevestigt hun officiële status niet.',pressure:'Drukte = bezette gewone vakken / alle gewone vakken × 100%. Onder 45%: rustig; 45–74%: gemiddeld; vanaf 75%: druk. Uurpatronen zijn aannames in de simulatie, geen gemeten spitsdruk.'};
 document.querySelectorAll('[data-kpi]').forEach(b=>b.onclick=()=>{$('kpiExplanation').textContent=explanations[b.dataset.kpi];$('kpiExplanation').scrollIntoView({behavior:'smooth',block:'nearest'})});
@@ -344,7 +344,9 @@ async function loadDataset(){
 }
 // PDOK BGT wordt achter de schermen geladen voor geografische controles.
 // Deze geometrie is geen sensordata; technische lagen of bronknoppen worden niet getoond.
-let datasetMap=null,datasetLayer=null,activeZoneIndex=null,activeZoneCount=0;
+let datasetMap=null,datasetLayer=null,activeZoneIndex=null,activeZoneCount=0,zoneNavigationPoints=[];
+function zoneDestinationForBay(bayId){if(!zoneNavigationPoints.length)return null;const index=(bayId-1)%zoneNavigationPoints.length;return zoneNavigationPoints[index]||null;}
+function setParkingNavigationLinks(point){if(!point)return;const dest=encodeURIComponent(point.lat+','+point.lon);$('routeGoogle').href='https://www.google.com/maps/dir/?api=1&destination='+dest+'&travelmode=driving';$('routeWaze').href='https://waze.com/ul?ll='+dest+'&navigate=yes';$('routeApple').href='https://maps.apple.com/?daddr='+dest+'&dirflg=d';}
 function renderDatasetMap(){
  if(!chosen||!window.L)return;
  if(!datasetMap){datasetMap=L.map('datasetMap',{scrollWheelZoom:false}).setView([chosen.lat,chosen.lon],17);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(datasetMap);}
@@ -363,6 +365,7 @@ function renderDatasetMap(){
  const forecastHour=typeof hour==='number'?hour:12;
  const simulatedBays=stateAt(hour,minute);
  activeZoneCount=displayFeatures.length;
+  zoneNavigationPoints=displayFeatures.map(f=>{try{const center=L.geoJSON(f).getBounds().getCenter();return {lat:+center.lat.toFixed(7),lon:+center.lng.toFixed(7)};}catch(e){return null;}});
  const statuses=displayFeatures.map((f,i)=>{
    const bays=simulatedBays.filter((b,j)=>j%displayFeatures.length===i);
    return {capacity:bays.length,free:bays.filter(b=>!b.occupied&&!b.accessible).length,occupied:bays.filter(b=>b.occupied).length,accessible:bays.filter(b=>b.accessible).length,bays};
@@ -395,7 +398,7 @@ function renderDatasetMap(){
       layer.closePopup();
       const scene=$('streetScene');
       if(scene){scene.scrollIntoView({behavior:'smooth',block:'start'});scene.style.outline='3px solid #087968';scene.style.outlineOffset='4px';setTimeout(()=>{scene.style.outline='';scene.style.outlineOffset='';},2500);}
-      $('detail').textContent='Kaartgebied '+(i+1)+': kies een groen vak uit dit gebied. Vakken uit andere gebieden zijn tijdelijk uitgeschakeld. Bevestig je keuze om verder te gaan (simulatie).';
+      $('detail').textContent='Kaartgebied '+(i+1)+': kies een groen vak uit dit gebied. Vakken uit andere gebieden zijn lichtgroen en blijven selecteerbaar. De navigatie gebruikt het bijbehorende kaartgebied (simulatie).';
    });
    if(v.free===0&&!accessible){button.disabled=true;button.textContent='Geen vrije plaatsen (demo)';button.style.opacity='.6';}
    popup.append(title,desc,occupancyDetail,button,eligibility,links);
