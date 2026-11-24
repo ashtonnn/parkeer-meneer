@@ -295,23 +295,30 @@ function renderDatasetMap(){
  if(datasetLayer)datasetMap.removeLayer(datasetLayer);
  const features=bgtGeoJson?.features||[];
  const parking=features.filter(f=>String(f.properties?.functie||'').toLowerCase().includes('parkeer'));
+ const fallback=parking.length===0;
+ // If the BGT sample has no parking polygons, show clearly labeled synthetic demo zones,
+ // not purported real parking bays or real geographic parking inventory.
+ const displayFeatures=fallback?Array.from({length:6},(_,i)=>{
+   const angle=i*Math.PI/3,lat=chosen.lat+Math.sin(angle)*.00055,lon=chosen.lon+Math.cos(angle)*.00085;
+   return {type:'Feature',properties:{functie:'demo-zone'},geometry:{type:'Polygon',coordinates:[[[lon-.00009,lat-.000055],[lon+.00009,lat-.000055],[lon+.00009,lat+.000055],[lon-.00009,lat+.000055],[lon-.00009,lat-.000055]]]}};
+ }):parking;
  const forecastHour=typeof hour==='number'?hour:12;
- const statuses=parking.map((f,i)=>{
+ const statuses=displayFeatures.map((f,i)=>{
    const capacity=6+(i*7%9);
    const rush=(forecastHour>=7&&forecastHour<=9)||(forecastHour>=16&&forecastHour<=19);
    const occupancy=Math.min(capacity,Math.max(0,Math.round(capacity*(rush?.82:.48)+Math.sin(i*2.7+forecastHour)*2)));
    return {capacity,free:capacity-occupancy};
  });
- datasetLayer=L.geoJSON({type:'FeatureCollection',features:parking},{
-  style:f=>{const i=parking.indexOf(f),v=statuses[i];return {color:'#172b3a',weight:4,fillColor:i%7===1?'#2563eb':v.free===0?'#dc2626':'#16a34a',fillOpacity:1};},
+ datasetLayer=L.geoJSON({type:'FeatureCollection',features:displayFeatures},{
+  style:f=>{const i=displayFeatures.indexOf(f),v=statuses[i];return {color:'#172b3a',weight:4,fillColor:i%7===1?'#2563eb':v.free===0?'#dc2626':'#16a34a',fillOpacity:1};},
   onEachFeature:(f,layer)=>{
-   const i=parking.indexOf(f),v=statuses[i];
-   const center=layer.getBounds().getCenter(),dest=encodeURIComponent(center.lat+','+center.lng);
+   const i=displayFeatures.indexOf(f),v=statuses[i];
+   const center=layer.getBounds().getCenter(),dest=encodeURIComponent(fallback?chosen.lat+','+chosen.lon:center.lat+','+center.lng);
    const popup=document.createElement('div');
    popup.style.minWidth='205px';
-   const title=document.createElement('strong');title.textContent='Parkeergebied '+(i+1);
+   const title=document.createElement('strong');title.textContent=(fallback?'Fictieve demo-zone ':'Parkeergebied ')+(i+1);
    const desc=document.createElement('p');desc.textContent='Verwacht '+v.free+' van '+v.capacity+' plaatsen vrij (demo). '+(i%7===1?'Toegankelijke parkeerlocatie (gesimuleerd). ':'')+'Geen live meting.';
-   const button=document.createElement('button');button.textContent='Ik wil hier parkeren';button.style.cssText='padding:9px 12px;background:#087968;color:white;border:0;border-radius:8px;cursor:pointer';
+   const button=document.createElement('button');button.textContent=fallback?'Navigeren naar straat (demo)':'Ik wil hier parkeren';button.style.cssText='padding:9px 12px;background:#087968;color:white;border:0;border-radius:8px;cursor:pointer';
    const links=document.createElement('div');links.style.cssText='display:none;margin-top:10px';
    links.innerHTML='<strong style="display:block;margin-bottom:9px">Kies je navigatie</strong><div style="display:grid;gap:8px"><a style="display:block;text-align:center;padding:11px 14px;border-radius:10px;background:#1877d2;color:white;text-decoration:none;font-weight:700" target="_blank" rel="noopener noreferrer" href="https://www.google.com/maps/dir/?api=1&destination='+dest+'">📍 Google Maps</a><a style="display:block;text-align:center;padding:11px 14px;border-radius:10px;background:#087f78;color:white;text-decoration:none;font-weight:700" target="_blank" rel="noopener noreferrer" href="https://waze.com/ul?ll='+dest+'&navigate=yes">🚗 Waze</a><a style="display:block;text-align:center;padding:11px 14px;border-radius:10px;background:#253449;color:white;text-decoration:none;font-weight:700" target="_blank" rel="noopener noreferrer" href="https://maps.apple.com/?daddr='+dest+'">🧭 Apple Kaarten</a><div style="border-top:1px solid #d4d9dd;padding-top:10px;margin-top:4px;text-align:center"><small>Vergeet Flitsmeister niet</small><a style="display:block;padding:10px 14px;margin-top:6px;border:2px solid #e38b1b;border-radius:10px;color:#8a4b00;text-decoration:none;font-weight:700" target="_blank" rel="noopener noreferrer" href="https://www.flitsmeister.nl/">⬇ Download Flitsmeister</a></div></div>';
    button.addEventListener('click',()=>{links.style.display='block';});
@@ -321,8 +328,8 @@ function renderDatasetMap(){
    layer.on('mouseout',()=>datasetLayer&&datasetLayer.resetStyle(layer));
   }
  }).addTo(datasetMap);
- parking.forEach((f,i)=>{const v=statuses[i];const geom=L.geoJSON(f);const center=geom.getBounds().getCenter();const color=v.free===0?'#dc2626':v.free<=2?'#f59e0b':'#16a34a';const dot=L.circleMarker(center,{radius:9,color:'#fff',weight:3,fillColor:color,fillOpacity:1}).addTo(datasetLayer);dot.bindTooltip(v.free+' vrij',{permanent:true,direction:'top',offset:[0,-7],className:'parking-count-label'});dot.on('click',()=>{const shape=datasetLayer.getLayers().find(l=>l.feature===f);if(shape)shape.openPopup(center);});});
- $('datasetMapStatus').textContent=parking.length?'Verwachte parkeerdruk per gebied (simulatie, geen live meting). Tik op een gekleurd gebied om te navigeren.':'Geen parkeervlakken gevonden in dit gebied.';
+ displayFeatures.forEach((f,i)=>{const v=statuses[i];const geom=L.geoJSON(f);const center=geom.getBounds().getCenter();const color=v.free===0?'#dc2626':'#16a34a';const dot=L.circleMarker(center,{radius:9,color:'#fff',weight:3,fillColor:color,fillOpacity:1}).addTo(datasetLayer);dot.bindTooltip(v.free+' vrij',{permanent:true,direction:'top',offset:[0,-7],className:'parking-count-label'});dot.on('click',()=>{const shape=datasetLayer.getLayers().find(l=>l.feature===f);if(shape)shape.openPopup(center);});});
+ $('datasetMapStatus').textContent=fallback?'Geen BGT-parkeervlakken gevonden. Je ziet nu zes fictieve demo-zones rond de straat; dit zijn GEEN echte parkeerlocaties.':'BGT-parkeergebieden met gesimuleerde bezetting (geen live meting). Tik op een gekleurd gebied.';
  setTimeout(()=>datasetMap.invalidateSize(),150);
 }
 let bgtGeoJson=null,bgtParkingSurfaceCount=0,bgtRequest=0;
