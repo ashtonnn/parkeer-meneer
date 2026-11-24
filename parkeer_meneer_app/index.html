@@ -297,10 +297,13 @@ function render(){if(typeof paintCamera==='function')paintCamera();const items=s
 const garageButton=$('showGarageOptions');
 if(garageButton)garageButton.textContent=c.free===0?'Bekijk de 3 alternatieve parkeerlocaties':'Bekijk 3 parkeeropties in de buurt';
 if(c.free===0){showCuratedGarages();}else{const options=$('garageOptions');if(options)options.innerHTML='';const disclaimer=$('garageDisclaimer');if(disclaimer)disclaimer.textContent='';}$('topTime').textContent=$('clock').textContent=$('timeLabel').textContent=String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');$('timeSlider').value=hour*4+minute/15;
-for(const [id,start] of [['topBays',0],['bottomBays',12]]){const root=$(id);root.innerHTML='';items.slice(start,start+12).forEach(b=>{const el=document.createElement('button');el.className='bay'+(b.occupied?' occupied':'')+(b.accessible?' accessible':'')+(selected===b.id?' selected':'');el.setAttribute('aria-label','Vak '+b.id+', '+(b.accessible?'illustratief toegankelijk':b.occupied?'bezet':'vrij'));el.innerHTML=(b.occupied?parkedCar(b.id):b.accessible?'<strong style="font-size:25px;color:white">♿</strong>':'<strong style="font-size:22px;color:white">P</strong>')+'<small>'+b.id+'</small>';el.onclick=()=>chooseBay(b);root.append(el)})}
+for(const [id,start] of [['topBays',0],['bottomBays',12]]){const root=$(id);root.innerHTML='';items.slice(start,start+12).forEach(b=>{const el=document.createElement('button');el.className='bay'+(b.occupied?' occupied':'')+(b.accessible?' accessible':'')+(selected===b.id?' selected':'');el.setAttribute('aria-label','Vak '+b.id+', '+(b.accessible?'illustratief toegankelijk':b.occupied?'bezet':'vrij'));el.innerHTML=(b.occupied?parkedCar(b.id):b.accessible?'<strong style="font-size:25px;color:white">♿</strong>':'<strong style="font-size:22px;color:white">P</strong>')+'<small>'+b.id+'</small>';const outsideZone=activeZoneIndex!==null&&((b.id-1)%activeZoneCount!==activeZoneIndex);
+ if(outsideZone){el.disabled=true;el.style.opacity='.24';el.style.cursor='not-allowed';el.title='Dit vak hoort bij een ander kaartgebied';}
+ else el.onclick=()=>chooseBay(b);
+ root.append(el)})}
 if(datasetMap&&chosen)renderDatasetMap();const chart=$('chart');chart.innerHTML='';for(let h=0;h<96;h++){const hh=Math.floor(h/4),mm=(h%4)*15,cc=counts(stateAt(hh,mm)),p=Math.round(cc.taken/cc.regular*100),bar=document.createElement('button');bar.className='chartbar'+(h===hour*4+minute/15?' active':'');bar.style.height=Math.max(7,p)+'%';bar.style.minWidth='3px';bar.title=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')+' — '+p+'% gesimuleerd bezet';bar.setAttribute('aria-label',bar.title);bar.onclick=()=>{hour=hh;minute=mm;selected=null;$('navigation').classList.add('hidden');render()};chart.append(bar)}
 if(selected){const b=items[selected-1];$('detail').textContent='Vak '+selected+': '+(b.accessible?'illustratief toegankelijk':b.occupied?'bezet':'vrij')+' om '+String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0')+' (synthetische sensor).'}else $('detail').textContent='Selecteer een parkeervak om de status te bekijken.'}
-function chooseBay(b){selected=b.id;$('navigation').classList.add('hidden');render();if(b.occupied||b.accessible){$('detail').textContent='Vak '+b.id+' is '+(b.accessible?'illustratief toegankelijk':'bezet')+'. Kies een groen vak.';return}$('confirmText').textContent=chosen.name+' · vak '+b.id+' · '+$('timeLabel').textContent+' (simulatie)';$('confirmOverlay').classList.add('active');$('confirmYes').focus()}
+function chooseBay(b){if(activeZoneIndex!==null&&((b.id-1)%activeZoneCount!==activeZoneIndex))return;selected=b.id;$('navigation').classList.add('hidden');render();if(b.occupied||b.accessible){$('detail').textContent='Vak '+b.id+' is '+(b.accessible?'illustratief toegankelijk':'bezet')+'. Kies een groen vak.';return}$('confirmText').textContent=chosen.name+' · vak '+b.id+' · '+$('timeLabel').textContent+' (simulatie)';$('confirmOverlay').classList.add('active');$('confirmYes').focus()}
 $('confirmNo').onclick=()=>{$('confirmOverlay').classList.remove('active');selected=null;render()};
 $('confirmYes').onclick=()=>{const id=selected,at=$('timeLabel').textContent,street=chosen.name;if(!id)return;$('confirmOverlay').classList.remove('active');const car=$('drivecar');car.classList.remove('go');void car.offsetWidth;car.classList.add('go');$('detail').textContent='🚗 Auto rijdt naar vak '+id+'…';setTimeout(()=>{if(selected!==id)return;$('routeTitle').textContent=street+' · Vak '+id;$('routeTime').textContent='Gesimuleerd vrij om '+at;$('routeDate').textContent='Datum: '+new Intl.DateTimeFormat('nl-NL',{dateStyle:'full',timeZone:'Europe/Amsterdam'}).format(new Date())+' · Simulatietijd: '+at;$('routeGoogle').href=$('google').href;$('routeWaze').href=$('waze').href;$('routeApple').href=$('apple').href;$('streetScreen').classList.add('hidden');$('routeScreen').classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'})},1500)};
 
@@ -340,7 +343,7 @@ async function loadDataset(){
 }
 // PDOK BGT wordt achter de schermen geladen voor geografische controles.
 // Deze geometrie is geen sensordata; technische lagen of bronknoppen worden niet getoond.
-let datasetMap=null,datasetLayer=null;
+let datasetMap=null,datasetLayer=null,activeZoneIndex=null,activeZoneCount=0;
 function renderDatasetMap(){
  if(!chosen||!window.L)return;
  if(!datasetMap){datasetMap=L.map('datasetMap',{scrollWheelZoom:false}).setView([chosen.lat,chosen.lon],17);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(datasetMap);}
@@ -358,6 +361,7 @@ function renderDatasetMap(){
  }):parking;
  const forecastHour=typeof hour==='number'?hour:12;
  const simulatedBays=stateAt(hour,minute);
+ activeZoneCount=displayFeatures.length;
  const statuses=displayFeatures.map((f,i)=>{
    const bays=simulatedBays.filter((b,j)=>j%displayFeatures.length===i);
    return {capacity:bays.length,free:bays.filter(b=>!b.occupied&&!b.accessible).length,occupied:bays.filter(b=>b.occupied).length,accessible:bays.filter(b=>b.accessible).length,bays};
@@ -385,12 +389,12 @@ function renderDatasetMap(){
    no.addEventListener('click',()=>{warning.style.display='block';links.style.display='none';});
    eligibility.append(question,yes,no,warning);
    button.addEventListener('click',()=>{
-      if(accessible){eligibility.style.display='block';links.style.display='none';return;}
-      if(v.free===0)return;
+      if(v.free===0){if(accessible){eligibility.style.display='block';links.style.display='none';}return;}
+      activeZoneIndex=i;activeZoneCount=displayFeatures.length;selected=null;render();
       layer.closePopup();
       const scene=$('streetScene');
       if(scene){scene.scrollIntoView({behavior:'smooth',block:'start'});scene.style.outline='3px solid #087968';scene.style.outlineOffset='4px';setTimeout(()=>{scene.style.outline='';scene.style.outlineOffset='';},2500);}
-      $('detail').textContent='Kies hieronder een groen parkeervak. Bevestig je keuze om verder te gaan naar navigatie (simulatie).';
+      $('detail').textContent='Kaartgebied '+(i+1)+': kies een groen vak uit dit gebied. Vakken uit andere gebieden zijn tijdelijk uitgeschakeld. Bevestig je keuze om verder te gaan (simulatie).';
    });
    if(v.free===0&&!accessible){button.disabled=true;button.textContent='Geen vrije plaatsen (demo)';button.style.opacity='.6';}
    popup.append(title,desc,occupancyDetail,button,eligibility,links);
