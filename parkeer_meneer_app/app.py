@@ -442,7 +442,7 @@ def school_bgt():
                           and isinstance(value,str)), "Onbekend")
             if "parkeer" in function.lower():
                 parking_surfaces+=1
-            if len(features)<65:
+            if len(features)<150:
                 features.append({"type":"Feature","id":str(item.get("id",""))[:120],
                                  "properties":{"functie":function[:100]},
                                  "geometry":geo})
