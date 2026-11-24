@@ -173,6 +173,37 @@ def _parking_position(geometry):
 def home():
     return send_from_directory(ROOT, "index.html")
 
+# Datasetkeuze op basis van de door school aangeleverde Cityverse JSON-LD-metadata.
+# Catalogusmetadata is geen bewijs dat een externe dienst bereikbaar is.
+@app.get("/api/school/data-sources")
+def school_data_sources():
+    return jsonify(
+        project="Cityverse / Parkeer Meneer",
+        strategy="Echte Rotterdamse geografische objecten waar beschikbaar; bezetting altijd expliciet gesimuleerd",
+        sources=[
+            {"id":"rotterdam-bor-2d","title":"Rotterdam Beheer Openbare Ruimte 2D",
+             "school_metadata":"689f8244faa203e6255bc0dc.jsonld",
+             "selected":True,"role":"Geografische parkeervoorzieningen",
+             "service_url":WFS,"app_endpoint":"/api/parking",
+             "availability":"runtime_check_required","live_occupancy":False},
+            {"id":"bgt-wegdeel","title":"BGT wegdeel / Rotterdam openbare ruimte 3D",
+             "school_metadata":"65ef253efe2ac522c6ac7b67.jsonld",
+             "selected":True,"role":"Aanvullende geografische context, niet zichtbaar als technische kaartlaag",
+             "service_url":_BGT_ITEMS,"app_endpoint":"/api/school/bgt?lat=51.9228&lon=4.4852",
+             "availability":"runtime_check_required","live_occupancy":False},
+            {"id":"rotterdam-3d","title":"Rotterdam 3D openbare ruimte",
+             "school_metadata":"65ef253efe2ac522c6ac7b67.jsonld",
+             "selected":False,"role":"Buiten scope van het 2D parkeerprototype","live_occupancy":False},
+            {"id":"shadow-2025","title":"Rotterdam 3D schaduwanalyse 2025",
+             "school_metadata":"6a9e88a6c1a440ac478cb37b.jsonld",
+             "selected":False,"role":"Niet relevant voor parkeerbezetting","live_occupancy":False}
+        ],
+        occupancy={"mode":"synthetic","sensor_count_per_street":24,
+                   "interval_minutes":15,"measurements_per_street_per_day":2304,
+                   "real_sensor_feed_connected":False},
+        caveat="Gemeentelijke parkeerobjecten zijn geen live sensormetingen; controleer /api/parking voor werkelijk ontvangen objecten."
+    )
+
 @app.get("/api/health")
 def health():
     return jsonify(status="ok", geographic_source="Rotterdam parking WFS (best effort)", occupancy="synthetic")
