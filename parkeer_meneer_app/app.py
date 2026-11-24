@@ -306,9 +306,13 @@ def parking():
             for feature in data.get("features",[]):
                 position=_parking_position(feature.get("geometry"))
                 if position is None:continue
+                if not isinstance(feature.get("properties"),dict):continue
                 try:lon,lat=map(float,position)
                 except (ValueError,TypeError):continue
                 if not (51.7<lat<52.2 and 3.7<lon<4.9):continue
+                # Filter on the actual Rotterdam municipality extent; never expose
+                # out-of-range or malformed coordinates as verified parking locations.
+                if not (-180 <= lon <= 180 and -90 <= lat <= 90):continue
                 props=feature.get("properties") or {}
                 name=next((str(v) for k,v in props.items() if any(t in k.lower() for t in ("naam","name","straat","type")) and v is not None),"Parkeervoorziening")
                 key=(round(lat,6),round(lon,6),typename)
@@ -317,10 +321,17 @@ def parking():
                 features.append({"id":str(feature.get("id") or len(features))[:100],"name":name[:80],"lat":lat,"lon":lon,"source":"Rotterdam WFS","layer":typename[:100]})
                 if len(features)>=300:break
         if not features:raise ValueError("Geen bruikbare geografische objecten ontvangen")
-        payload={"mode":"live","features":features,"types":types,"occupancy":"not_available","source":"Rotterdam parking WFS","sample_limited":True}
+        payload={"mode":"live","features":features,"feature_count":len(features),"types":types,
+                 "occupancy":"not_available","source":"Rotterdam parking WFS",
+                 "source_url":WFS,"data_kind":"official_parking_objects",
+                 "sample_limited":True,"note":"Echte gemeentelijke objectlocaties; geen live vrij/bezetmetingen."}
         ttl=900
     except (requests.RequestException,ValueError,ET.ParseError) as exc:
-        payload={"mode":"unavailable","features":[],"message":str(exc)[:180],"occupancy":"not_available","source":"Rotterdam parking WFS"}
+        payload={"mode":"unavailable","features":[],"feature_count":0,
+                 "message":str(exc)[:180],"occupancy":"not_available",
+                 "source":"Rotterdam parking WFS","source_url":WFS,
+                 "data_kind":"official_parking_objects",
+                 "note":"Externe bron onbereikbaar; geen gemeentelijke objectlocaties bevestigd."}
         ttl=120
     with _parking_lock:
         _parking_cache.update(expires=time.monotonic()+ttl,payload=payload)
