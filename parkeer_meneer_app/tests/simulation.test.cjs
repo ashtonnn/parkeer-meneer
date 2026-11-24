@@ -14,6 +14,17 @@ assert(html.includes('id="csvDownload"'),'CSV-export ontbreekt');
 assert(html.includes('id="forecastSummary"'),'Analysekaart ontbreekt');
 assert(html.includes('loadBgtForStreet()'),'BGT koppeling ontbreekt');
 
+// Controleer dat schooldata niet als echte live sensorbezetting wordt verkocht.
+const backend=fs.readFileSync(path.join(__dirname,'..','app.py'),'utf8');
+assert(backend.includes('@app.get("/api/parking")'),'Rotterdam WFS endpoint ontbreekt');
+assert(backend.includes('"source_url":WFS'),'Herkomst van gemeentelijke parkeerobjecten ontbreekt');
+assert(backend.includes('"feature_count":len(features)'),'Aantal werkelijk verwerkte gemeentelijke objecten ontbreekt');
+assert(backend.includes('"occupancy":"not_available"'),'Gemeentelijke locaties mogen geen live bezetting suggereren');
+assert(backend.includes('"mode":"unavailable"'),'WFS fallback ontbreekt');
+assert(backend.includes('@app.get("/api/school/bgt")'),'School BGT endpoint ontbreekt');
+assert(backend.includes('"occupancy":"synthetic_not_from_bgt"'),'BGT mag geen sensordata claimen');
+assert(!html.includes('id="bgtLayerToggle"'),'Verwijderde technische BGT-toggle staat nog in de gebruikersinterface');
+
 const main=scripts.find(x=>x.includes('function hash(s)'));
 const start=main.indexOf('function hash(s)');
 const stop=main.indexOf('function chips()',start);
